@@ -1,0 +1,103 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Laboratory Report LaTeX Template
+%
+% This template has been downloaded from:
+% http://www.latextemplates.com
+%
+% Original header:
+%
+% This is a LaTeX version of the sample laboratory report
+% from Virginia Tech's copyrighted 08-09 CHEM 1045/1046 lab manual.
+% Reproduction of this one appendix section for academic purposes
+% should fall under fair use.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article}
+
+\title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
+
+\author{Ian \textsc{O'Hara}} % Author name
+
+\begin{document}
+
+\maketitle % Insert the title, author and date
+
+\begin{tabular}{lr}
+2012/09/20 & At UPenn's Modlab (GRASP Subsidiary)\\ % Date the experiment was performed and partner's name
+Advisor: Dr. Mark Yim % Instructor/supervisor
+\end{tabular}
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+\renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
+
+\section{DEFINITIONS}
+The basic terminology of real time systems is taken from \cite{Laplante}.  Unless otherwise noted, assume these definitions can be found there.
+\begin{description}
+\item[System]{A mapping of a set of inputs into a set of outputs}
+\item[Response Time]{The time a system takes to map a set of inputs to the corresponding set of outputs}
+\item[Real Time System (RTS)]{A system where there is a bound set on the response time of a system.  When this bound is not met, the system is considered in a failed state.}
+\item[Hard Real Time System (HRTS)]{A RTS in which failure to meet the response time bound leads to catastrophic failure.  IE: Response times must be deterministically met.}
+\item[Soft Real Time System (SRTS)]{A RTS in which the response time bounds must be met the majority of the time. IE: Performance is degraded, but not destroyed, when response times are not met.}
+\item[Process Preemption]{A process preemption is the suspension of a process so that another higher priority process can run.  This can occur for a number of reasons, and is essentil in RTS.}
+\end{description}
+
+It is importantant to note that while RTS often deal with ``fast" times, a RTS does not need to be fast.  It simply needs to have explicit bounds on response times.
+
+Another phrasing from \cite{RealTimeLinux} is that a Real Time Application is one in which there are operational deadlines between some event being triggered and the applications response to that event.  The use of a Real Time Operating System (RTOS) gives the programmer calculated (hard real time) or measurement predicted (softer real time) response times.
+
+\section{INTRODUCTION}
+%------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%------------------------------------------------------------------------------
+
+\section{REAL TIME LINUX}
+The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
+
+\subsection{Development Info}
+It looks like \cite{Osdl} is highly involved with the Real Time Linux development process.  Their Real Time Linux project page \cite{OsdlRealTimeLinux} cites both Ingo Molnar and Thomas Gleixner as being the lead developers.
+
+The OSDL site cites a few important locations for downloading RTL requirements:
+\begin{enumerate}
+\item The Linux Kernel at kernel.org
+\item The Real Time Preempt Patch at \cite{RealTimeLinuxPatch}
+\end{enumerate}
+Their precompiled kernels are debian based, which is nice.  That is what I want anyway.
+\begin{enumerate}
+\item User-Mode code is running (Kernel preempts it)
+\item Kernel returns from a system call or an interrupt back to user space
+\item Kernel code blocks on a mutex or explicitly yields
+\end{enumerate}
+These points are from the FAQ at \cite{RealTimeLinux}.
+
+\section{NOTES ON USE}
+Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
+
+\begin{thebibliography}{9}
+
+\bibitem{Laplante}
+Laplante, Phillip A. Real Time System Design and Analysis, 3rd Ed. Pscataway, NJ: IEEE Press, 2004. Print.
+\bibitem{RealTimeLinux}
+Real-Time Linux Wiki, https://rt.wiki.kernel.org/index.php/Main\_Page, 2012-09-18
+\bibitem{BuildEmbedLinux}
+Yaghmour, K.; Masters, J; Ben-Yossef, G; and Gerem, P. Building Embedded Linux Systems, 2nd Ed. Sebastopol, CA: O'Reilly Media, Inc. 2008. Print.
+\bibitem{RTL3Announce}
+Gleixner, T. ``[ANNOUNCE] 3.0-rc7-rt0". https://lkml.org/lkml/2011/7/19/309. Email
+\bibitem{RTL3Announce2}
+http://www.h-online.com/open/features/Kernel-Log-real-time-kernel-goes-Linux-3-0-1382791.html
+\bibitem{Osadl}
+Open Source Software for Automation and Other Industries. https://www.osadl.org/Home.1.0.html
+\bibitem{OsadlRealTimeLinux}
+OSDL Real Time Linux Project, https://www.osadl.org/Realtime-Linux.projects-realtime-linux.0.html
+\bibitem{RealTimeLinuxPatch}
+Real Time Linux Latest Patches, http://www.kernel.org/pub/linux/kernel/projects/rt/
+\bibitem{RealTimeLinuxInstall}
+Real Time Linux Installation, https://www.osadl.org/Realtime-Preempt-Kernel.kernel-rt.0.html
+\end{thebibliography}
+
+\end{document}

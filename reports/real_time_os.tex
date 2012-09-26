@@ -19,6 +19,9 @@
 
 \documentclass{article}
 
+\usepackage{hyperref}
+\usepackage{color}
+
 \title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
 
 \author{Ian \textsc{O'Hara}} % Author name
@@ -36,6 +39,8 @@ Advisor: Dr. Mark Yim % Instructor/supervisor
 
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
 
+\newcommand{\TODO}[1]{ {\bf \textcolor{red}{TODO:} #1 }}
+
 \section{DEFINITIONS}
 The basic terminology of real time systems is taken from \cite{Laplante}.  Unless otherwise noted, assume these definitions can be found there.
 \begin{description}
@@ -52,17 +57,68 @@ It is importantant to note that while RTS often deal with ``fast" times, a RTS d
 Another phrasing from \cite{RealTimeLinux} is that a Real Time Application is one in which there are operational deadlines between some event being triggered and the applications response to that event.  The use of a Real Time Operating System (RTOS) gives the programmer calculated (hard real time) or measurement predicted (softer real time) response times.
 
 \section{INTRODUCTION}
-%------------------------------------------------------------------------------
-%	BIBLIOGRAPHY
-%------------------------------------------------------------------------------
+\section{WHAT IS REAL TIME and APPROACHES}
+As stated in the definitions, real time is very general.  Almost any problem can be casted as a ``real time" problem (eg: shipping a package across the US can be considered real time if you need it to be there in 5 days).  
+\section{WHY}
+Why should we bother with Real Time Operating Systems (RTOS)?  This needs to be answered and justified, and can be done by looking at the different ways in which we can program, in this case, robots.  
+
+On the one hand we have high level generic operating systems, like Vanilla Linux, which provides a mechanism for:
+\begin{enumerate}
+\item Running many independent processes without any thought
+\item Interfacing with many different pieces of hardware without having to write low level device specific code (i2c bus, spi bus, etc all are just simple entities we can use)
+\item Developing in-situ
+\item Using many different programming languages
+\item Taking advantage of open source code without worrying about it being specific to your hardware 
+\end{enumerate}
+
+However, along with the benefits of abstracting away all of the low level details for us, a generic operating system does not normally care about meeting timing deadlines.  For instance, a desktop user does not care if their mouse position is updated exactly once every 1 ms.  If the update time fluctuates between 100ms and 100us, the user will not notice a difference.  The same goes for most typical uses of generic operating systems; scientific number crunching, web browsing, text editing, and many others do not need consistent timing.  The most ``real time" most general use computers get is video games which require consistent 30-60hz update rates.  However, even in this case, the failure to meet the deadlines does not result in catastrophic failure; just lag.
+
+On the opposite side of the spectrum is the microcontroller approach.  In this scenario, the programmer himself ``writes" the operating system.  He is responsible for coordinating and scheduling everything that happens.  This can be nice because it allows for absolute control of what happens when - timing is in the programmer's hands, and has the resolution of the microcontroller's clock.
+
+However, the advantages of the absolute control of a microcontroller are accompanied by many disadvantages:
+\begin{enumerate}
+\item You must develop offboard, cross compile, and then use a binary loading mechanism to load code onto the microcontroller.
+\item The programmer is responsible for everything.
+\item Device interfaces are at the lowest level.  Most microcontrollers have basic libraries in the wild, but the platform specific nature of microcontroller programming makes for many platform specific libraries that accomplish the same funcionality.  This results in a lot of un-maintained dead libraries.\TODO{Justify and source}
+\item The programmer must know the minutia of any microcontroller used.
+\item Switching hardware often involes re-writting significant portions of the code since it is very hardware specific.
+\end{enumerate}
+
+The middle ground is the RTOS which provides the advantages of having an operating system and the advantages of having the guaranteed timing of a microcontroller.  However, this comes with the added complexity of having to be, to some level, aware of how your operating system works.  Also, writing code must be done in such a manner that it can be real time.
+
+\section{LINUX}
+\subsection{Task Scheduling}
+Linux uses {\texttt nice()} to control task priority.  Priority levels are -20 (high priority) to 19 (low priority).  You can see tasks as a column in {\texttt top} output (Column ``NI" column)
 
 \section{REAL TIME LINUX}
 The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
 
-\subsection{Development Info}
-It looks like \cite{Osdl} is highly involved with the Real Time Linux development process.  Their Real Time Linux project page \cite{OsdlRealTimeLinux} cites both Ingo Molnar and Thomas Gleixner as being the lead developers.
+\subsection{Considerations}
+The RT Linux community came up with a list of quality-of-service metrics that they wanted to consider. \cite{RTLSummaryPost}  They are:
+\begin{enumerate}
+\item List of services for which realtime response is supported
+\item Probability of meeting a deadline in absensce of hardware failure
+\item Allowable deadline (response time) of a task
+\item Performance and Scalability (Ambiguous?)
+\end{enumerate}
 
-The OSDL site cites a few important locations for downloading RTL requirements:
+In addition to quality of service, they list 5 other qualities that are desirable in a full real time operating system.  All 6 are:
+\begin{enumerate}
+\item Quality of Service
+\item Amount of code that must be inspected to assure the quality of service
+\item API is provided
+\item Minimal added complexity of applications that take advantage of real time
+\item Fault isolation: If non-RT code fails, does it affect RT code?
+\item What hardware and software is suppored?
+\end{enumerate}
+
+The general consensus was that a POSIX conforming api should be provided.
+
+
+\subsection{Development Info}
+It looks like \cite{Osadl} is highly involved with the Real Time Linux development process.  Their Real Time Linux project page \cite{OsadlRealTimeLinux} cites both Ingo Molnar and Thomas Gleixner as being the lead developers.
+
+The OSADL site cites a few important locations for downloading RTL requirements:
 \begin{enumerate}
 \item The Linux Kernel at kernel.org
 \item The Real Time Preempt Patch at \cite{RealTimeLinuxPatch}
@@ -83,21 +139,29 @@ Real time software can't have it memory paged out, so in linux a call to {\textt
 \bibitem{Laplante}
 Laplante, Phillip A. Real Time System Design and Analysis, 3rd Ed. Pscataway, NJ: IEEE Press, 2004. Print.
 \bibitem{RealTimeLinux}
-Real-Time Linux Wiki, https://rt.wiki.kernel.org/index.php/Main\_Page, 2012-09-18
+Real-Time Linux Wiki, \url{https://rt.wiki.kernel.org/index.php/Main\_Page, 2012-09-18}
 \bibitem{BuildEmbedLinux}
 Yaghmour, K.; Masters, J; Ben-Yossef, G; and Gerem, P. Building Embedded Linux Systems, 2nd Ed. Sebastopol, CA: O'Reilly Media, Inc. 2008. Print.
 \bibitem{RTL3Announce}
-Gleixner, T. ``[ANNOUNCE] 3.0-rc7-rt0". https://lkml.org/lkml/2011/7/19/309. Email
+Gleixner, T. ``[ANNOUNCE] 3.0-rc7-rt0". \url{https://lkml.org/lkml/2011/7/19/309}. Email
 \bibitem{RTL3Announce2}
-http://www.h-online.com/open/features/Kernel-Log-real-time-kernel-goes-Linux-3-0-1382791.html
+\url{http://www.h-online.com/open/features/Kernel-Log-real-time-kernel-goes-Linux-3-0-1382791.html}
 \bibitem{Osadl}
-Open Source Software for Automation and Other Industries. https://www.osadl.org/Home.1.0.html
+Open Source Software for Automation and Other Industries. \url{https://www.osadl.org/Home.1.0.html}
 \bibitem{OsadlRealTimeLinux}
-OSDL Real Time Linux Project, https://www.osadl.org/Realtime-Linux.projects-realtime-linux.0.html
+OSDL Real Time Linux Project, \url{https://www.osadl.org/Realtime-Linux.projects-realtime-linux.0.html}
 \bibitem{RealTimeLinuxPatch}
-Real Time Linux Latest Patches, http://www.kernel.org/pub/linux/kernel/projects/rt/
+Real Time Linux Latest Patches, \url{http://www.kernel.org/pub/linux/kernel/projects/rt/}
 \bibitem{RealTimeLinuxInstall}
-Real Time Linux Installation, https://www.osadl.org/Realtime-Preempt-Kernel.kernel-rt.0.html
+Real Time Linux Installation, \url{https://www.osadl.org/Realtime-Preempt-Kernel.kernel-rt.0.html}
+\bibitem{RTLMailingList}
+Real Time Linux Users mailing list, \url{http://vger.kernel.org/vger-lists.html#linux-rt-users}
+\bibitem{LinuxKernel}
+The Linux Kernel Archives, \url{http://kernel.org/}
+\bibitem{RealTimePreemptionOverview}
+McKenney, Paul. A Real Time Preemption Overview. \url{http://lwn.net/Articles/146861/}
+\bibitem{RTLSummaryPost}
+McKenney, Paul. Real Time Patch Acceptance Summary. \url{http://lwn.net/Articles/143323/}
 \end{thebibliography}
 
 \end{document}

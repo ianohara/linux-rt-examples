@@ -30,9 +30,9 @@
 
 \maketitle % Insert the title, author and date
 
-\begin{tabular}{lr}
-2012/09/20 & At UPenn's Modlab (GRASP Subsidiary)\\ % Date the experiment was performed and partner's name
-Advisor: Dr. Mark Yim % Instructor/supervisor
+\begin{tabular}{lc}
+\date & At UPenn's Modlab (GRASP Subsidiary)\\ % Date the experiment was performed and partner's name
+&Advisor: Dr. Mark Yim % Instructor/supervisor
 \end{tabular}
 
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
@@ -58,20 +58,23 @@ Another phrasing from \cite{RealTimeLinux} is that a Real Time Application is on
 
 \section{INTRODUCTION}
 \section{WHAT IS REAL TIME and APPROACHES}
-As stated in the definitions, real time is very general.  Almost any problem can be casted as a ``real time" problem (eg: shipping a package across the US can be considered real time if you need it to be there in 5 days).  
+The definition of real time is ambiguous in scope.  Almost any problem can be casted as a ``real time" problem (eg: shipping a package across the US can be considered real time if you need it to be there in 5 days).  
+
+In the context of robots, real time demands are typically associated with sensor input and control loops.  EG: Read this sensor every 1ms and run a control loop at 100us.
 \section{WHY}
 Why should we bother with Real Time Operating Systems (RTOS)?  This needs to be answered and justified, and can be done by looking at the different ways in which we can program, in this case, robots.  
 
-On the one hand we have high level generic operating systems, like Vanilla Linux, which provides a mechanism for:
+On the one hand we have high level generic operating systems, like Linux, which provides a mechanism for:
 \begin{enumerate}
-\item Running many independent processes without any thought
+\item Running many independent processes
+\item Memory management and safety.  Once process in user space cannot corrupt the memory of another process or the kernel (as long as the system has an MMU, and most systems running Linux do).
 \item Interfacing with many different pieces of hardware without having to write low level device specific code (i2c bus, spi bus, etc all are just simple entities we can use)
 \item Developing in-situ
 \item Using many different programming languages
 \item Taking advantage of open source code without worrying about it being specific to your hardware 
 \end{enumerate}
 
-However, along with the benefits of abstracting away all of the low level details for us, a generic operating system does not normally care about meeting timing deadlines.  For instance, a desktop user does not care if their mouse position is updated exactly once every 1 ms.  If the update time fluctuates between 100ms and 100us, the user will not notice a difference.  The same goes for most typical uses of generic operating systems; scientific number crunching, web browsing, text editing, and many others do not need consistent timing.  The most ``real time" most general use computers get is video games which require consistent 30-60hz update rates.  However, even in this case, the failure to meet the deadlines does not result in catastrophic failure; just lag.
+However, along with the benefits of abstracting away all of the low level details for us, a generic operating system does not normally care about meeting timing deadlines.  For instance, a desktop user does not care if their mouse position is updated exactly once every 1 ms.  If the update time fluctuates between 100ms and 100us, the user will not notice a difference.  The same goes for most typical uses of generic operating systems; scientific number crunching, web browsing, text editing, and many others do not need consistent timing.  The ``real time" general use computers face is video games which require consistent 30-60hz update rates.  However, even in this case, the failure to meet the deadlines does not result in catastrophic failure; just lag.
 
 On the opposite side of the spectrum is the microcontroller approach.  In this scenario, the programmer himself ``writes" the operating system.  He is responsible for coordinating and scheduling everything that happens.  This can be nice because it allows for absolute control of what happens when - timing is in the programmer's hands, and has the resolution of the microcontroller's clock.
 
@@ -82,16 +85,43 @@ However, the advantages of the absolute control of a microcontroller are accompa
 \item Device interfaces are at the lowest level.  Most microcontrollers have basic libraries in the wild, but the platform specific nature of microcontroller programming makes for many platform specific libraries that accomplish the same funcionality.  This results in a lot of un-maintained dead libraries.\TODO{Justify and source}
 \item The programmer must know the minutia of any microcontroller used.
 \item Switching hardware often involes re-writting significant portions of the code since it is very hardware specific.
+\item There is no memory management - an errant memory access can change anything.  This includes mux registers, timer registers, or literally anything that has a memory address.
 \end{enumerate}
 
 The middle ground is the RTOS which provides the advantages of having an operating system and the advantages of having the guaranteed timing of a microcontroller.  However, this comes with the added complexity of having to be, to some level, aware of how your operating system works.  Also, writing code must be done in such a manner that it can be real time.
 
+\subsection{The Numbers}
+\TODO{Test numbers showing that we can be faster and more consistent with a real time OS}
+
 \section{LINUX}
+\subsection{Operating System}
+An Operating System is a piece of software that does two things:
+\begin{enumerate}
+\item Provides an abstracted interface to the underlying hardware
+\item Manager of the execution of a users programs (ie: sharing the CPU between all users' processes)
+\end{enumerate}
+An operating system does its best to give each process the impression that the resources of the entire computer are at its disposal at all times.  In the absence of inter-process communication, the operating system does its best to make each process think it is the only think running on a computer.
+
+The main functions of a kernel, which is the core part of an OS that is always in memory and running, are memory management, process scheduling, interfacing to the hardware, file management, and communication with external devices and networks. \cite{IntroLinuxForRealTime}
 \subsection{Task Scheduling}
 Linux uses {\texttt nice()} to control task priority.  Priority levels are -20 (high priority) to 19 (low priority).  You can see tasks as a column in {\texttt top} output (Column ``NI" column)
 
+The {\texttt SCHED\_FF, SCHED\_RR, SCHED\_OTHER, and SCHED\_FIFO} scheduling policies define how a task is treated will be used.  The \texttt{SCHED\_OTHER} option is default.
+
+\subsection{Context switching and Preemption}
+Context switching occurs when the kernel changes the ``current" task, be it to another kernel task or to a user space process.  This occurs often behind the scenes to make it look as if all of the processes running on a system are running simultaneously.  In reality, only one runs at a time.
+
+Preemption is the suspension of a current running task in favor of another higher priority one.
+
+See \cite{LinuxProcessSwitch} for an excellent explanation of the different ways linux knows it is safe to switch context, and how different tasks (including kernel tasks) can be preempted.
+
+\subsection{User Control}
+In standard Linux, users have some control over scheduling.  Mentioned in this document is the nice() scheduling priority mechanism.  Also, users can take advantage of the sleep() system call (and others of the same flavor such as usleep()) to signify to the kernel that the user process is done what it needs to do for some time.  POSIX compliance of an OS stipulates that the sleep() functions return control the process at or after the specified time.  The ``or after" specification is important because an OS does not need to make any guarantees on when it returns control to the process as long as it is after the specified sleep time.  This is an issue when trying to write realtime programs.
+
 \section{REAL TIME LINUX}
 The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
+
+In 2002 the National Institute of Standards and Technology (NIST) had Aeolean Inc. write a report detailing the viability of using Real-Time Linux for control applications. \cite{IntroLinuxForRealTime}  In it, they note that standard linux is alright for soft realtime applications where scheduling on the order of milliseconds (with several hundred MHz system clock) and occasional missed deadlines are accepted.  The report then goes on to say that hard realtime linux can achieve 10 to 100 microsecond timing with no misses.  It is important to note that dedicated RTOS can do better than this, but they come without the established (and growing!) Linux community.  Linux is active, has thousands of developers contributing, is used in government and universities, and is not going anywhere.  This is a major reason for trying our best to make realtime Linux to work for us.
 
 \subsection{Considerations}
 The RT Linux community came up with a list of quality-of-service metrics that they wanted to consider. \cite{RTLSummaryPost}  They are:
@@ -113,7 +143,6 @@ In addition to quality of service, they list 5 other qualities that are desirabl
 \end{enumerate}
 
 The general consensus was that a POSIX conforming api should be provided.
-
 
 \subsection{Development Info}
 It looks like \cite{Osadl} is highly involved with the Real Time Linux development process.  Their Real Time Linux project page \cite{OsadlRealTimeLinux} cites both Ingo Molnar and Thomas Gleixner as being the lead developers.
@@ -162,6 +191,10 @@ The Linux Kernel Archives, \url{http://kernel.org/}
 McKenney, Paul. A Real Time Preemption Overview. \url{http://lwn.net/Articles/146861/}
 \bibitem{RTLSummaryPost}
 McKenney, Paul. Real Time Patch Acceptance Summary. \url{http://lwn.net/Articles/143323/}
+\bibitem{LinuxProcessSwitch}
+Love, R. Linux Kernel Development: Preemption and Context Switching, \url{http://www.informit.com/articles/article.aspx?p=101760&seqNum=3}
+\bibitem{IntroLinuxForRealTime}
+Aeolean Inc., Introduction to Linux for Real-Time Control, 2002, \url{http://tornasol.datsi.fi.upm.es/ciclope-old/doc/rtos/cache/doc/realtimelinuxreport.pdf}
 \end{thebibliography}
 
 \end{document}

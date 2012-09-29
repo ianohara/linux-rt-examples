@@ -90,9 +90,6 @@ However, the advantages of the absolute control of a microcontroller are accompa
 
 The middle ground is the RTOS which provides the advantages of having an operating system and the advantages of having the guaranteed timing of a microcontroller.  However, this comes with the added complexity of having to be, to some level, aware of how your operating system works.  Also, writing code must be done in such a manner that it can be real time.
 
-\subsection{The Numbers}
-\TODO{Test numbers showing that we can be faster and more consistent with a real time OS}
-
 \section{LINUX}
 \subsection{Operating System}
 An Operating System is a piece of software that does two things:
@@ -160,6 +157,16 @@ Their precompiled kernels are debian based, which is nice.  That is what I want 
 \end{enumerate}
 These points are from the FAQ at \cite{RealTimeLinux}.
 
+\subsection{Performance}
+There are many qualitative (and somewhat subjective) performance metrics used, some of which are mentioned above.  However, the two objective quantitative measures of performance for a RTOS are:
+\begin{enumerate}
+\item Event Latency
+\item Periodic Jitter
+\end{enumerate}
+
+Event Latency is the time it takes a request to be fulfilled.  In other words, if my real time process requests control but does not actual get control of the CPU for 10 micro seconds, then the latency is 10 micro seconds.
+
+Periodic Jitter is the variation in time of a periodic repetitive task.  
 \section{NOTES ON USE}
 Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
 

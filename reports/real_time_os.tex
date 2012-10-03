@@ -57,7 +57,7 @@ It is importantant to note that while RTS often deal with ``fast" times, a RTS d
 Another phrasing from \cite{RealTimeLinux} is that a Real Time Application is one in which there are operational deadlines between some event being triggered and the applications response to that event.  The use of a Real Time Operating System (RTOS) gives the programmer calculated (hard real time) or measurement predicted (softer real time) response times.
 
 \section{INTRODUCTION}
-\section{WHAT IS REAL TIME and APPROACHES}
+\section{WHAT IS REAL TIME}
 The definition of real time is ambiguous in scope.  Almost any problem can be casted as a ``real time" problem (eg: shipping a package across the US can be considered real time if you need it to be there in 5 days).  
 
 In the context of robots, real time demands are typically associated with sensor input and control loops.  EG: Read this sensor every 1ms and run a control loop at 100us.
@@ -168,9 +168,15 @@ Event Latency is the time it takes a request to be fulfilled.  In other words, i
 
 Periodic Jitter is the variation in time of a periodic repetitive task.  
 
+\subsection{Testing}
 There is a set of testing tools on kernel.org that is maintained by Clark Williams at \cite{RTTest}.
 
-\section{NOTES ON USE}
+This section outlines how to use them, and some specific results for the gumstix.
+
+\section{NOTES ON OUR USE}
+We are using the rt Linux release at \cite{RealTimeLinuxPatch}.  We are using the 3.2 kernel, so we are using the ``v3.2-rt" branch on the repo.
+
+\section{NOTES}
 Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
 
 \begin{thebibliography}{9}
@@ -210,3 +216,4 @@ Real Time Linux Testing Tools. git://git.kernel.org/pub/scm/linux/kernel/git/clr
 \end{thebibliography}
 
 \end{document}
+

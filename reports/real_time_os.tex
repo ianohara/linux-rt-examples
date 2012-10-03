@@ -167,6 +167,9 @@ There are many qualitative (and somewhat subjective) performance metrics used, s
 Event Latency is the time it takes a request to be fulfilled.  In other words, if my real time process requests control but does not actual get control of the CPU for 10 micro seconds, then the latency is 10 micro seconds.
 
 Periodic Jitter is the variation in time of a periodic repetitive task.  
+
+There is a set of testing tools on kernel.org that is maintained by Clark Williams at \cite{RTTest}.
+
 \section{NOTES ON USE}
 Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
 
@@ -202,6 +205,8 @@ McKenney, Paul. Real Time Patch Acceptance Summary. \url{http://lwn.net/Articles
 Love, R. Linux Kernel Development: Preemption and Context Switching, \url{http://www.informit.com/articles/article.aspx?p=101760&seqNum=3}
 \bibitem{IntroLinuxForRealTime}
 Aeolean Inc., Introduction to Linux for Real-Time Control, 2002, \url{http://tornasol.datsi.fi.upm.es/ciclope-old/doc/rtos/cache/doc/realtimelinuxreport.pdf}
+\bibitem{RTTest}
+Real Time Linux Testing Tools. git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git
 \end{thebibliography}
 
 \end{document}

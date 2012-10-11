@@ -173,47 +173,15 @@ There is a set of testing tools on kernel.org that is maintained by Clark Willia
 
 This section outlines how to use them, and some specific results for the gumstix.
 
+\input{image_creation.tex}
+
 \section{NOTES ON OUR USE}
 We are using the rt Linux release at \cite{RealTimeLinuxPatch}.  We are using the 3.2 kernel, so we are using the ``v3.2-rt" branch on the repo.
 
 \section{NOTES}
 Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
 
-\begin{thebibliography}{9}
-
-\bibitem{Laplante}
-Laplante, Phillip A. Real Time System Design and Analysis, 3rd Ed. Pscataway, NJ: IEEE Press, 2004. Print.
-\bibitem{RealTimeLinux}
-Real-Time Linux Wiki, \url{https://rt.wiki.kernel.org/index.php/Main\_Page, 2012-09-18}
-\bibitem{BuildEmbedLinux}
-Yaghmour, K.; Masters, J; Ben-Yossef, G; and Gerem, P. Building Embedded Linux Systems, 2nd Ed. Sebastopol, CA: O'Reilly Media, Inc. 2008. Print.
-\bibitem{RTL3Announce}
-Gleixner, T. ``[ANNOUNCE] 3.0-rc7-rt0". \url{https://lkml.org/lkml/2011/7/19/309}. Email
-\bibitem{RTL3Announce2}
-\url{http://www.h-online.com/open/features/Kernel-Log-real-time-kernel-goes-Linux-3-0-1382791.html}
-\bibitem{Osadl}
-Open Source Software for Automation and Other Industries. \url{https://www.osadl.org/Home.1.0.html}
-\bibitem{OsadlRealTimeLinux}
-OSDL Real Time Linux Project, \url{https://www.osadl.org/Realtime-Linux.projects-realtime-linux.0.html}
-\bibitem{RealTimeLinuxPatch}
-Real Time Linux Latest Patches, \url{http://www.kernel.org/pub/linux/kernel/projects/rt/}
-\bibitem{RealTimeLinuxInstall}
-Real Time Linux Installation, \url{https://www.osadl.org/Realtime-Preempt-Kernel.kernel-rt.0.html}
-\bibitem{RTLMailingList}
-Real Time Linux Users mailing list, \url{http://vger.kernel.org/vger-lists.html#linux-rt-users}
-\bibitem{LinuxKernel}
-The Linux Kernel Archives, \url{http://kernel.org/}
-\bibitem{RealTimePreemptionOverview}
-McKenney, Paul. A Real Time Preemption Overview. \url{http://lwn.net/Articles/146861/}
-\bibitem{RTLSummaryPost}
-McKenney, Paul. Real Time Patch Acceptance Summary. \url{http://lwn.net/Articles/143323/}
-\bibitem{LinuxProcessSwitch}
-Love, R. Linux Kernel Development: Preemption and Context Switching, \url{http://www.informit.com/articles/article.aspx?p=101760&seqNum=3}
-\bibitem{IntroLinuxForRealTime}
-Aeolean Inc., Introduction to Linux for Real-Time Control, 2002, \url{http://tornasol.datsi.fi.upm.es/ciclope-old/doc/rtos/cache/doc/realtimelinuxreport.pdf}
-\bibitem{RTTest}
-Real Time Linux Testing Tools. git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git
-\end{thebibliography}
+\input{bibliography.tex}
 
 \end{document}
 

@@ -1,0 +1,5 @@
+This is the v3.2-rt kernel with Sakomon's v3.2 kernel omap2plus_defconfig config file as a starting place for the .config.  I turned on full preemption option (CONFIG_PREEMPT_RT_FULL) and used more or less all defaults after that.  High resolution timers are on.
+
+I think the previous kernel which booted "stalled" at the "uncompressing kernel...booting kernel" stage actually did boot successfully, just I did not have the CONFIG_CMDLINE option setup properly (ie: it was an empty string).  Sakomon's default omap config takes care of this for me, so it booted right up and had the correct root fs location along with the correct serial console.
+
+Initial cyclictest runs do not show promising results... (looks close to the same as Sakomon's stock kernel with high res timers!  D'oh!)

@@ -1,0 +1,1 @@
+This image did not work.  Hung at "uncompressing kernel....booting kernel" again.  I don't think its actually hanging, but rather I'm missing drivers for the console or something.  However, on this version the CONFIG_CMDLINE was the same as the working 10-11-2012 image based on Sakomon's config.

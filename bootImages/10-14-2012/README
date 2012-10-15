@@ -1,3 +1,5 @@
 The 10-14-2012 image is meant to be the "worst case" image.  IE:  Take Sakoman's default Omap (omap2plus) config, remove high res timers, and remove any preemtpion functionality.
 
 Built against: Linux 3.2.31-rt46 (f63de562286...)
+
+NOTE: Build failed on modules, but the image built.

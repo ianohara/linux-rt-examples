@@ -1,0 +1,6 @@
+This is a first attempt at making a more minimal rt kernel using sakoman's default config as a base config file.  I said no to as much as humanly possible when stepping through the config.  I started with omap2plus_defconfig
+
+Built against the rt git repo at: f63de56228644...
+
+
+

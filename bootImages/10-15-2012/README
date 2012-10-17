@@ -2,5 +2,6 @@ This is a first attempt at making a more minimal rt kernel using sakoman's defau
 
 Built against the rt git repo at: f63de56228644...
 
+Image boots, but intertactive ssh terminal is screwed up.  I get: "PTY allocation request failed on channel 0" and then no newlines and a frozen terminal when I ssh in.
 
-
+I recovered by using ssh pipes to mount mmcblk0p2, copy over an older working uImage, and then reboot.  So, the image definitely booted but and works just something is screwed pu with the interactive terminal sessions.  Calling this one a failure.

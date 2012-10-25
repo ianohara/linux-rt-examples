@@ -26,7 +26,6 @@
 \newcommand{\rootCom}[1]{\\\indent\indent\texttt{ \small root\# #1}\\}
 \newcommand{\userCom}[1]{\\\indent\indent\texttt{ \small user\$ #1}\\}
 
-
 \title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
 \author{Ian \textsc{O'Hara}} % Author name
 
@@ -39,26 +38,32 @@
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
 
+\section{INTRODUCTION}
+When writing software for hardware, the ability to control the timing of events is crucial.  With conventional operating systems meant for generic user programs, this is not possible.  A class of operating systems called Real Time Operation Systems aims to solve this problem.  This document will outline first what Real Time Operating Systems are, why they are needed, and then will go into the details of getting one working on a Gumsitx \cite{gumstix}.  From there, the performance of this specific RTOS and hardware combination will be characterized, and details of how to take advantage of the RTOS capabilities will be laid out.
+
 \section{DEFINITIONS}
 The basic terminology of real time systems is taken from \cite{Laplante}.  Unless otherwise noted, assume these definitions can be found there.
+
+This section contains definitions of terms used throughout the document.  It is the equivelant of a glossary, but at the document start.
+
 \begin{description}
     \item[System]{A mapping of a set of inputs into a set of outputs}
     \item[Response Time]{The time a system takes to map a set of inputs to the corresponding set of outputs}
     \item[Real Time System (RTS)]{A system where there is a bound set on the response time of a system.  When this bound is not met, the system is considered in a failed state.}
     \item[Hard Real Time System (HRTS)]{A RTS in which failure to meet the response time bound leads to catastrophic failure.  IE: Response times must be deterministically met.}
     \item[Soft Real Time System (SRTS)]{A RTS in which the response time bounds must be met the majority of the time. IE: Performance is degraded, but not destroyed, when response times are not met.}
-    \item[Process Preemption]{A process preemption is the suspension of a process so that another higher priority process can run.  This can occur for a number of reasons, and is essentil in RTS.}
+    \item[Process Preemption]{A process preemption is the suspension of a process so that another higher priority process can run.  This can occur for a number of reasons, and is essential in RTS.}
 \end{description}
 
-It is importantant to note that while RTS often deal with ``fast" times, a RTS does not need to be fast.  It simply needs to have explicit bounds on response times.
-
-Another phrasing from \cite{RealTimeLinux} is that a Real Time Application is one in which there are operational deadlines between some event being triggered and the applications response to that event.  The use of a Real Time Operating System (RTOS) gives the programmer calculated (hard real time) or measurement predicted (softer real time) response times.
-
-\section{INTRODUCTION}
 \section{WHAT IS REAL TIME}
 The definition of real time is ambiguous in scope.  Almost any problem can be casted as a ``real time" problem (eg: shipping a package across the US can be considered real time if you need it to be there in 5 days).  
 
 In the context of robots, real time demands are typically associated with sensor input and control loops.  EG: Read this sensor every 1ms and run a control loop at 100us.
+
+It is importantant to note that while RTS often deal with ``fast" times, a RTS does not need to be fast.  It simply needs to have explicit bounds on response times.  For example, a task that must run once a year 4.000$\frac{+}{-}$0.001 seconds after the new year is real time.
+
+Another phrasing from \cite{RealTimeLinux} is that a Real Time Application is one in which there are operational deadlines between some event being triggered and the applications response to that event.  The use of a Real Time Operating System (RTOS) gives the programmer calculated (hard real time) or measurement predicted (softer real time) response times.
+
 \section{WHY}
 Why should we bother with Real Time Operating Systems (RTOS)?  This needs to be answered and justified, and can be done by looking at the different ways in which we can program, in this case, robots.  
 
@@ -80,7 +85,7 @@ However, the advantages of the absolute control of a microcontroller are accompa
 \begin{enumerate}
     \item You must develop offboard, cross compile, and then use a binary loading mechanism to load code onto the microcontroller.
     \item The programmer is responsible for everything.
-    \item Device interfaces are at the lowest level.  Most microcontrollers have basic libraries in the wild, but the platform specific nature of microcontroller programming makes for many platform specific libraries that accomplish the same funcionality.  This results in a lot of un-maintained dead libraries.\TODO{Justify and source}
+    \item Device interfaces are at the lowest level.  Most microcontrollers have basic libraries in the wild, but the platform specific nature of microcontroller programming makes for many platform specific libraries that accomplish the same funcionality.  This results in a lot of un-maintained dead libraries.
     \item The programmer must know the minutia of any microcontroller used.
     \item Switching hardware often involes re-writting significant portions of the code since it is very hardware specific.
     \item There is no memory management - an errant memory access can change anything.  This includes mux registers, timer registers, or literally anything that has a memory address.
@@ -93,16 +98,16 @@ The middle ground is the RTOS which provides the advantages of having an operati
 An Operating System is a piece of software that does two things:
 \begin{enumerate}
     \item Provides an abstracted interface to the underlying hardware
-    \item Manager of the execution of a users programs (ie: sharing the CPU between all users' processes)
+    \item Manages the execution of a users programs (ie: sharing the CPU between all users' processes)
 \end{enumerate}
 An operating system does its best to give each process the impression that the resources of the entire computer are at its disposal at all times.  In the absence of inter-process communication, the operating system does its best to make each process think it is the only think running on a computer.
 
-The main functions of a kernel, which is the core part of an OS that is always in memory and running, are memory management, process scheduling, interfacing to the hardware, file management, and communication with external devices and networks. \cite{IntroLinuxForRealTime}
+The main functions of a kernel (the core part of an OS that is always in memory and running) are memory management, process scheduling, interfacing to the hardware, file management, and communication with external devices and networks. \cite{IntroLinuxForRealTime}
 
 \subsection{Task Scheduling}
 Linux uses {\texttt nice()} to control task priority.  Priority levels are -20 (high priority) to 19 (low priority).  You can see tasks as a column in {\texttt top} output (Column ``NI" column)
 
-The {\texttt SCHED\_FF, SCHED\_RR, SCHED\_OTHER, and SCHED\_FIFO} scheduling policies define how a task is treated will be used.  The \texttt{SCHED\_OTHER} option is default.
+The {\texttt{SCHED\_FF}, \texttt{SCHED\_RR}, \texttt{SCHED\_OTHER}, and \texttt{SCHED\_FIFO}} scheduling policies define how a task is treated will be used.  The \texttt{SCHED\_OTHER} option is default.
 
 \subsection{Context switching and Preemption}
 Context switching occurs when the kernel changes the ``current" task, be it to another kernel task or to a user space process.  This occurs often behind the scenes to make it look as if all of the processes running on a system are running simultaneously.  In reality, only one runs at a time.
@@ -116,6 +121,13 @@ In standard Linux, users have some control over scheduling.  Mentioned in this d
 
 \section{REAL TIME LINUX}
 The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
+
+\begin{enumerate}
+\item User-Mode code is running (Kernel preempts it)
+\item Kernel returns from a system call or an interrupt back to user space
+\item Kernel code blocks on a mutex or explicitly yields
+\end{enumerate}
+These points are from the FAQ at \cite{RealTimeLinux}.
 
 In 2002 the National Institute of Standards and Technology (NIST) had Aeolean Inc. write a report detailing the viability of using Real-Time Linux for control applications. \cite{IntroLinuxForRealTime}  In it, they note that standard linux is alright for soft realtime applications where scheduling on the order of milliseconds (with several hundred MHz system clock) and occasional missed deadlines are accepted.  The report then goes on to say that hard realtime linux can achieve 10 to 100 microsecond timing with no misses.  It is important to note that dedicated RTOS can do better than this, but they come without the established (and growing!) Linux community.  Linux is active, has thousands of developers contributing, is used in government and universities, and is not going anywhere.  This is a major reason for trying our best to make realtime Linux to work for us.
 
@@ -148,13 +160,6 @@ The OSADL site cites a few important locations for downloading RTL requirements:
 \item The Linux Kernel at kernel.org
 \item The Real Time Preempt Patch at \cite{RealTimeLinuxPatch}
 \end{enumerate}
-Their precompiled kernels are debian based, which is nice.  That is what I want anyway.
-\begin{enumerate}
-\item User-Mode code is running (Kernel preempts it)
-\item Kernel returns from a system call or an interrupt back to user space
-\item Kernel code blocks on a mutex or explicitly yields
-\end{enumerate}
-These points are from the FAQ at \cite{RealTimeLinux}.
 
 \subsection{Performance}
 There are many qualitative (and somewhat subjective) performance metrics used, some of which are mentioned above.  However, the two objective quantitative measures of performance for a RTOS are:

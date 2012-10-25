@@ -22,34 +22,32 @@
 \usepackage{hyperref}
 \usepackage{color}
 
-\title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
+\newcommand{\TODO}[1]{ {\bf \textcolor{red}{TODO:} #1 }}
+\newcommand{\rootCom}[1]{\\\indent\indent\texttt{ \small root\# #1}\\}
+\newcommand{\userCom}[1]{\\\indent\indent\texttt{ \small user\$ #1}\\}
 
+
+\title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
 \author{Ian \textsc{O'Hara}} % Author name
 
 \begin{document}
-
 \maketitle % Insert the title, author and date
-
 \begin{tabular}{lc}
-\date & At UPenn's Modlab (GRASP Subsidiary)\\ % Date the experiment was performed and partner's name
-&Advisor: Dr. Mark Yim % Instructor/supervisor
+    \date & At UPenn's Modlab (GRASP Subsidiary)\\ % Date the experiment was performed and partner's name
+    &Advisor: Dr. Mark Yim % Instructor/supervisor
 \end{tabular}
-
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
-
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
-
-\newcommand{\TODO}[1]{ {\bf \textcolor{red}{TODO:} #1 }}
 
 \section{DEFINITIONS}
 The basic terminology of real time systems is taken from \cite{Laplante}.  Unless otherwise noted, assume these definitions can be found there.
 \begin{description}
-\item[System]{A mapping of a set of inputs into a set of outputs}
-\item[Response Time]{The time a system takes to map a set of inputs to the corresponding set of outputs}
-\item[Real Time System (RTS)]{A system where there is a bound set on the response time of a system.  When this bound is not met, the system is considered in a failed state.}
-\item[Hard Real Time System (HRTS)]{A RTS in which failure to meet the response time bound leads to catastrophic failure.  IE: Response times must be deterministically met.}
-\item[Soft Real Time System (SRTS)]{A RTS in which the response time bounds must be met the majority of the time. IE: Performance is degraded, but not destroyed, when response times are not met.}
-\item[Process Preemption]{A process preemption is the suspension of a process so that another higher priority process can run.  This can occur for a number of reasons, and is essentil in RTS.}
+    \item[System]{A mapping of a set of inputs into a set of outputs}
+    \item[Response Time]{The time a system takes to map a set of inputs to the corresponding set of outputs}
+    \item[Real Time System (RTS)]{A system where there is a bound set on the response time of a system.  When this bound is not met, the system is considered in a failed state.}
+    \item[Hard Real Time System (HRTS)]{A RTS in which failure to meet the response time bound leads to catastrophic failure.  IE: Response times must be deterministically met.}
+    \item[Soft Real Time System (SRTS)]{A RTS in which the response time bounds must be met the majority of the time. IE: Performance is degraded, but not destroyed, when response times are not met.}
+    \item[Process Preemption]{A process preemption is the suspension of a process so that another higher priority process can run.  This can occur for a number of reasons, and is essentil in RTS.}
 \end{description}
 
 It is importantant to note that while RTS often deal with ``fast" times, a RTS does not need to be fast.  It simply needs to have explicit bounds on response times.
@@ -66,12 +64,12 @@ Why should we bother with Real Time Operating Systems (RTOS)?  This needs to be 
 
 On the one hand we have high level generic operating systems, like Linux, which provides a mechanism for:
 \begin{enumerate}
-\item Running many independent processes
-\item Memory management and safety.  Once process in user space cannot corrupt the memory of another process or the kernel (as long as the system has an MMU, and most systems running Linux do).
-\item Interfacing with many different pieces of hardware without having to write low level device specific code (i2c bus, spi bus, etc all are just simple entities we can use)
-\item Developing in-situ
-\item Using many different programming languages
-\item Taking advantage of open source code without worrying about it being specific to your hardware 
+    \item Running many independent processes
+    \item Memory management and safety.  Once process in user space cannot corrupt the memory of another process or the kernel (as long as the system has an MMU, and most systems running Linux do).
+    \item Interfacing with many different pieces of hardware without having to write low level device specific code (i2c bus, spi bus, etc all are just simple entities we can use)
+    \item Developing in-situ
+    \item Using many different programming languages
+    \item Taking advantage of open source code without worrying about it being specific to your hardware 
 \end{enumerate}
 
 However, along with the benefits of abstracting away all of the low level details for us, a generic operating system does not normally care about meeting timing deadlines.  For instance, a desktop user does not care if their mouse position is updated exactly once every 1 ms.  If the update time fluctuates between 100ms and 100us, the user will not notice a difference.  The same goes for most typical uses of generic operating systems; scientific number crunching, web browsing, text editing, and many others do not need consistent timing.  The ``real time" general use computers face is video games which require consistent 30-60hz update rates.  However, even in this case, the failure to meet the deadlines does not result in catastrophic failure; just lag.
@@ -80,12 +78,12 @@ On the opposite side of the spectrum is the microcontroller approach.  In this s
 
 However, the advantages of the absolute control of a microcontroller are accompanied by many disadvantages:
 \begin{enumerate}
-\item You must develop offboard, cross compile, and then use a binary loading mechanism to load code onto the microcontroller.
-\item The programmer is responsible for everything.
-\item Device interfaces are at the lowest level.  Most microcontrollers have basic libraries in the wild, but the platform specific nature of microcontroller programming makes for many platform specific libraries that accomplish the same funcionality.  This results in a lot of un-maintained dead libraries.\TODO{Justify and source}
-\item The programmer must know the minutia of any microcontroller used.
-\item Switching hardware often involes re-writting significant portions of the code since it is very hardware specific.
-\item There is no memory management - an errant memory access can change anything.  This includes mux registers, timer registers, or literally anything that has a memory address.
+    \item You must develop offboard, cross compile, and then use a binary loading mechanism to load code onto the microcontroller.
+    \item The programmer is responsible for everything.
+    \item Device interfaces are at the lowest level.  Most microcontrollers have basic libraries in the wild, but the platform specific nature of microcontroller programming makes for many platform specific libraries that accomplish the same funcionality.  This results in a lot of un-maintained dead libraries.\TODO{Justify and source}
+    \item The programmer must know the minutia of any microcontroller used.
+    \item Switching hardware often involes re-writting significant portions of the code since it is very hardware specific.
+    \item There is no memory management - an errant memory access can change anything.  This includes mux registers, timer registers, or literally anything that has a memory address.
 \end{enumerate}
 
 The middle ground is the RTOS which provides the advantages of having an operating system and the advantages of having the guaranteed timing of a microcontroller.  However, this comes with the added complexity of having to be, to some level, aware of how your operating system works.  Also, writing code must be done in such a manner that it can be real time.
@@ -94,12 +92,13 @@ The middle ground is the RTOS which provides the advantages of having an operati
 \subsection{Operating System}
 An Operating System is a piece of software that does two things:
 \begin{enumerate}
-\item Provides an abstracted interface to the underlying hardware
-\item Manager of the execution of a users programs (ie: sharing the CPU between all users' processes)
+    \item Provides an abstracted interface to the underlying hardware
+    \item Manager of the execution of a users programs (ie: sharing the CPU between all users' processes)
 \end{enumerate}
 An operating system does its best to give each process the impression that the resources of the entire computer are at its disposal at all times.  In the absence of inter-process communication, the operating system does its best to make each process think it is the only think running on a computer.
 
 The main functions of a kernel, which is the core part of an OS that is always in memory and running, are memory management, process scheduling, interfacing to the hardware, file management, and communication with external devices and networks. \cite{IntroLinuxForRealTime}
+
 \subsection{Task Scheduling}
 Linux uses {\texttt nice()} to control task priority.  Priority levels are -20 (high priority) to 19 (low priority).  You can see tasks as a column in {\texttt top} output (Column ``NI" column)
 
@@ -173,6 +172,13 @@ There is a set of testing tools on kernel.org that is maintained by Clark Willia
 
 This section outlines how to use them, and some specific results for the gumstix.
 
+\subsection{On The Gumstix}
+The thread on the gumstix-users mailing list at \cite{gumstixRtThread} is the most comprehensive discussion of real time gumstix I have found.  That specific response by Philipp Lutz mimicks and confirms a lot of the work I have done so far. Early in the thread, Xenomai \cite{xenomai} is also mentioned.  \TODO{Research Xenomai}
+
+\subsection{cyclictest}
+Cyclictest measures the latency and jitter of executing timer based events on a system.  It spawns a number of threads, and then sets a timer for each thread that triggers at a certain interval.  An example of a call to cyclictest is: \rootCom{cyclictest -n -p80 -i0 -l5000 -v -t10 -d10}which shows results in nanoseconds (-n), sets thread 1 to priority 80 (-p80), spaces the interval of each thread by 0 nanoseconds (-i0), runs 5000 loops (-l5000), in verbose mode which is good for automated post processing (-v), runs 10 threads (-t10), where each thread's timer is set at a 10 microsecond interval (-d10).
+
+The rt.wiki.kernel.org wiki page for Cyclictest has some good other examples of ``in the wild" uses. \cite{rtWikiCyclicTest}
 \input{image_creation.tex}
 
 \section{NOTES ON OUR USE}
@@ -182,6 +188,5 @@ We are using the rt Linux release at \cite{RealTimeLinuxPatch}.  We are using th
 Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
 
 \input{bibliography.tex}
-
 \end{document}
 

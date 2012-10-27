@@ -1,22 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Laboratory Report LaTeX Template
-%
-% This template has been downloaded from:
-% http://www.latextemplates.com
-%
-% Original header:
-%
-% This is a LaTeX version of the sample laboratory report
-% from Virginia Tech's copyrighted 08-09 CHEM 1045/1046 lab manual.
-% Reproduction of this one appendix section for academic purposes
-% should fall under fair use.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%----------------------------------------------------------------------------------------
-%	DOCUMENT CONFIGURATIONS
-%----------------------------------------------------------------------------------------
-
 \documentclass{article}
 
 \usepackage{hyperref}
@@ -25,6 +6,7 @@
 \newcommand{\TODO}[1]{ {\bf \textcolor{red}{TODO:} #1 }}
 \newcommand{\rootCom}[1]{\\\indent\indent\texttt{ \small root\# #1}\\}
 \newcommand{\userCom}[1]{\\\indent\indent\texttt{ \small user\$ #1}\\}
+\newcommand{\unit}[1]{\texttt{\[#1\]}}
 
 \title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
 \author{Ian \textsc{O'Hara}} % Author name
@@ -176,6 +158,38 @@ Periodic Jitter is the variation in time of a periodic repetitive task.
 There is a set of testing tools on kernel.org that is maintained by Clark Williams at \cite{RTTest}.
 
 This section outlines how to use them, and some specific results for the gumstix.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|ccc|}
+\hline
+Image & Cycles & Interval $\mu s$ & \multicolumn{3}{|c|}{Timer Event Response Latency}\\
+      &        &                  & Min $\mu s$  & Avg $\mu s$  & Max $ \mu s$\\
+\hline
+linux-rt, No Preempt, No High Res Timers\cite{worstCaseKern}&5000&10000&7679&11446&15240\\
+Sakamon, No Preempt, High Res Timers\cite{sakamonKern}&50000&1000&14&236&426\\
+linux-rt, Full Preempt, High Rest Timers\cite{rtKern}&50000&1000&30&156&332\\
+\hline
+\end{tabular}
+\caption{Unloaded system Result of running \texttt{\# cyclictest -n -p80 -l<Count> -i<Interval>} with test kernels running on a gumstix.  The uImages corresponding to all of these kernels can be found through their citations.}
+\label{tab:cyclictestResultsNoLoad}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|ccc|}
+\hline
+Image & Cycles & Interval $\mu s$ & \multicolumn{3}{|c|}{Timer Event Response Latency}\\
+      &        &                  & Min $\mu s$  & Avg $\mu s$  & Max $ \mu s$\\
+\hline
+linux-rt, No Preempt, No High Res Timers\cite{worstCaseKern}&5000&10000&7868&11663&15429\\
+Sakamon, No Preempt, High Res Timers\cite{sakamonKern}&50000&1000&0&138&271\\
+linux-rt, Full Preempt, High Rest Timers\cite{rtKern}&50000&1000&32&158&302\\
+\hline
+\end{tabular}
+\caption{Result, with 0.80 (Upper limit of where we should operate \TODO{Cite from Real time systems book}) loaded system, of running \texttt{\# cyclictest -n -p80 -l<Count> -i<Interval>} with test kernels running on a gumstix.  The uImages corresponding to all of these kernels can be found through their citations. The \texttt{stress -c 2} tool was used to stress the system.}
+\label{tab:cyclictestResuts}
+\end{table}
 
 \subsection{On The Gumstix}
 The thread on the gumstix-users mailing list at \cite{gumstixRtThread} is the most comprehensive discussion of real time gumstix I have found.  That specific response by Philipp Lutz mimicks and confirms a lot of the work I have done so far. Early in the thread, Xenomai \cite{xenomai} is also mentioned.  \TODO{Research Xenomai}

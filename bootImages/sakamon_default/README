@@ -1,0 +1,2 @@
+This is the kernel Uriah and I built for the DTemp boats from Sakoman's 3.2.0 git repo (git://www.sakoman.com/git/linux-omap-2.6 on the omap-3.2.0 branch). It uses his default omap config file (arch/arm/configs/omap2plus_defconfig) with all default options (ie: copy omap2plus to .config in the root of the linux tree, run make oldconfig, and hit enter a ton of times).
+

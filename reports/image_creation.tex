@@ -2,7 +2,7 @@
 \section{U-Boot}
 The Das U-Boot is a ``Universal Boot Loader" \cite{UBoot} developed in Denmark.  The gumstix uses U-Boot as its boot loader, and so in order to change our boot routine we need to know how it works.  U-Boot's documentation can be found at \cite{UBootDocs}. U-Boot's source code can be found at \cite{UBootSource}.
 \subsection{Building Kernels for UBoot}
-To build a kernel meant for booting with UBoot, you need to use the ``make uImage" kernel build rule.  This requires that the ``mkimage" tool is available to the kernel build tools.  On a Debian based system, this can be done with ``apt-get install uboot-mkimage".
+To build a kernel meant for booting with UBoot, we need a uImage kernel image.  This requires that the ``mkimage" tool is available to the kernel build tools.  On a Debian based system, this can be done with ``apt-get install uboot-mkimage".
 \section{Building the RT Kernel}
 With a clean checkout of the real time kernel, you can build it by changing directory to the root of the git checkout and doing: \userCom{make config} or: \userCom{make menuconfig} if you have ncurses and want to navigate through a menu to setup your kernel.  This step is essential, because you'll configure what your compiled kernel will act like and what it will contain.  To turn on full real time capability, you should make sure that the following options are set to 'y':
 \begin{enumerate}
@@ -12,13 +12,12 @@ With a clean checkout of the real time kernel, you can build it by changing dire
 \item CONFIG\_HIGH\_RES\_TIMERS
 \end{enumerate}
 
-Also note that it is important to configure the ``CONFIG\_CMDLINE" option so that once your kernel boots it knows where to get its root filesystem and what console to output to.  An example of a working version of this option comes from Sakoman's kernel:\\
-\indent\indent CONFIG\_CMDLINE="root=/dev/mmcblk0p2 rootwait console=tty02,115200"
-\\
+Also note that it is important to configure the ``CONFIG\_CMDLINE" option so that once your kernel boots it knows where to get its root filesystem and what console to output to.  An example of a working version of this option comes from Sakoman's kernel:
+\bashCode{CONFIG\_CMDLINE="root=/dev/mmcblk0p2 rootwait console=tty02,115200"}
 If you have a config file you want to use as a basis for a kernel build, put it in the linux root as .config and then run \userCom{make oldconfig}
 Once configuration is done, you can build the kernel by \userCom{make prepare} and then \userCom{make}  This might prompt for a few missed config options, and then will head off building the whole thing.  If compiling on the gumstix, this can take 40 minutes or more.
 
-Once the build succeeds, you need to make a uImage version of the new kernel which can be done with \userCom{uImage}  This is a packaged version of the kernel that is specifically meant to be used with the U-Boot boot loader.  The new uImage will be in ``arch/arm/boot/".
+Once the build succeeds, you need to make a uImage version of the new kernel which can be done with \userCom{make uImage}  This is a packaged version of the kernel that is specifically meant to be used with the U-Boot boot loader.  The new uImage will be in ``arch/arm/boot/".
 
 If you're using a gumstix and want to put the new kernel in place, you first need to mount the boot partition on the micro SD card.  This should be a FAT partition on the micro SD card, and if you're using the CONFIG\_CMDLINE specified above (which specifies that the root filesystem is at /dev/mmcblk0p2, or the second partition on the mmcblk device) then you can mount the boot partition with \rootCom{mount -t vfat /dev/mmcblk0p1 /media/card} which will mount the boot partition to /media/card.
 

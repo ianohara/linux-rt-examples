@@ -6,6 +6,7 @@
 \newcommand{\TODO}[1]{ {\bf \textcolor{red}{TODO:} #1 }}
 \newcommand{\rootCom}[1]{\\\indent\indent\texttt{ \small root\# #1}\\}
 \newcommand{\userCom}[1]{\\\indent\indent\texttt{ \small user\$ #1}\\}
+\newcommand{\bashCode}[1]{\\\indent\indent\texttt{ \small #1} \\}
 \newcommand{\unit}[1]{\texttt{\[#1\]}}
 
 \title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
@@ -52,7 +53,7 @@ Why should we bother with Real Time Operating Systems (RTOS)?  This needs to be 
 On the one hand we have high level generic operating systems, like Linux, which provides a mechanism for:
 \begin{enumerate}
     \item Running many independent processes
-    \item Memory management and safety.  Once process in user space cannot corrupt the memory of another process or the kernel (as long as the system has an MMU, and most systems running Linux do).
+    \item Memory management and safety.  One process in user space cannot corrupt the memory of another process or the kernel (as long as the system has an MMU, and most systems running Linux do).
     \item Interfacing with many different pieces of hardware without having to write low level device specific code (i2c bus, spi bus, etc all are just simple entities we can use)
     \item Developing in-situ
     \item Using many different programming languages
@@ -84,12 +85,23 @@ An Operating System is a piece of software that does two things:
 \end{enumerate}
 An operating system does its best to give each process the impression that the resources of the entire computer are at its disposal at all times.  In the absence of inter-process communication, the operating system does its best to make each process think it is the only think running on a computer.
 
-The main functions of a kernel (the core part of an OS that is always in memory and running) are memory management, process scheduling, interfacing to the hardware, file management, and communication with external devices and networks. \cite{IntroLinuxForRealTime}
+The main functions of a kernel (the core part of an OS that is always in memory and running) are\cite{IntroLinuxForRealTime}:
+\begin{enumerate}
+\item memory management
+\item process scheduling
+\item interfacing to the hardware
+\item file management
+\item communication with external devices and networks.
+\end{enumerate}
 
 \subsection{Task Scheduling}
 Linux uses {\texttt nice()} to control task priority.  Priority levels are -20 (high priority) to 19 (low priority).  You can see tasks as a column in {\texttt top} output (Column ``NI" column)
 
-The {\texttt{SCHED\_FF}, \texttt{SCHED\_RR}, \texttt{SCHED\_OTHER}, and \texttt{SCHED\_FIFO}} scheduling policies define how a task is treated will be used.  The \texttt{SCHED\_OTHER} option is default.
+The {\texttt{SCHED\_FF}, \texttt{SCHED\_RR}, \texttt{SCHED\_OTHER}, and \texttt{SCHED\_FIFO}} scheduling policies define how the kernel schedules each individual system process.  The \texttt{SCHED\_OTHER} option is default.
+
+\texttt{SCHED\_FIFO} should be used for real time tasks. Reading through all of the the Linux documentation on the scheduler \cite{schedulerDocs}, particularly \texttt{sched-rt-group.txt}, is a good idea.
+
+Each process is given one of the scheduling policies listed above.  For a full discussion of how to use process scheduling (watch out, it might be slightly outdated) see Chapter 10 of Understanding the Linux Kernel.\cite{linuxKernelCh10}  Also, check the \texttt{syscalls} manpage for system calls of the form \texttt{sched\_*} for a good starter list of relevant system calls for getting and setting scheduling related settings for a process.
 
 \subsection{Context switching and Preemption}
 Context switching occurs when the kernel changes the ``current" task, be it to another kernel task or to a user space process.  This occurs often behind the scenes to make it look as if all of the processes running on a system are running simultaneously.  In reality, only one runs at a time.
@@ -100,6 +112,10 @@ See \cite{LinuxProcessSwitch} for an excellent explanation of the different ways
 
 \subsection{User Control}
 In standard Linux, users have some control over scheduling.  Mentioned in this document is the nice() scheduling priority mechanism.  Also, users can take advantage of the sleep() system call (and others of the same flavor such as usleep()) to signify to the kernel that the user process is done what it needs to do for some time.  POSIX compliance of an OS stipulates that the sleep() functions return control the process at or after the specified time.  The ``or after" specification is important because an OS does not need to make any guarantees on when it returns control to the process as long as it is after the specified sleep time.  This is an issue when trying to write realtime programs.
+
+\TODO{How to use Scheduling system calls}
+
+\TODO{How to use Timers (High Res Timers)}
 
 \section{REAL TIME LINUX}
 The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
@@ -135,12 +151,13 @@ In addition to quality of service, they list 5 other qualities that are desirabl
 The general consensus was that a POSIX conforming api should be provided.
 
 \subsection{Development Info}
-It looks like \cite{Osadl} is highly involved with the Real Time Linux development process.  Their Real Time Linux project page \cite{OsadlRealTimeLinux} cites both Ingo Molnar and Thomas Gleixner as being the lead developers.
+It looks like \cite{Osadl} is highly involved with the Real Time Linux development process.  Their Real Time Linux project page \cite{OsadlRealTimeLinux} cites both Ingo Molnar and Thomas Gleixner as being the lead developers.  After spending time on the real time linux users list (linux-rt-users) it appears that as of October 31, 2012 Steven Rostedt (rostedt@goodmis.org) is the current manager of patches/releases to real time linux development.
 
 The OSADL site cites a few important locations for downloading RTL requirements:
 \begin{enumerate}
 \item The Linux Kernel at kernel.org
 \item The Real Time Preempt Patch at \cite{RealTimeLinuxPatch}
+\item The Real Time Linux Kernel git repo \cite{RealTimeLinuxGit} (active and current October 31, 2012).  Also referenced in the README in \cite{RealTimeLinuxPatch}
 \end{enumerate}
 
 \subsection{Performance}
@@ -152,16 +169,22 @@ There are many qualitative (and somewhat subjective) performance metrics used, s
 
 Event Latency is the time it takes a request to be fulfilled.  In other words, if my real time process requests control but does not actual get control of the CPU for 10 micro seconds, then the latency is 10 micro seconds.
 
-Periodic Jitter is the variation in time of a periodic repetitive task.  
+Periodic Jitter is the variation in time of a periodic repetitive task, or the variance of latency.  IE: If I have a task that needs control once every 100 micro seconds, what is the variance of the actual time between each successive resumption of control.
 
 \subsection{Testing}
 There is a set of testing tools on kernel.org that is maintained by Clark Williams at \cite{RTTest}.
 
-This section outlines how to use them, and some specific results for the gumstix.
+\subsubsection{cyclictest}
+Cyclictest measures the latency and jitter of executing timer based events on a system.  It spawns a number of threads, and then sets a timer for each thread that triggers at a certain interval.  An example of a call to cyclictest is: \rootCom{cyclictest -n -p80 -i0 -l5000 -v -t10 -d10}which shows results in nanoseconds (-n), sets thread 1 to priority 80 (-p80), spaces the interval of each thread by 0 nanoseconds (-i0), runs 5000 loops (-l5000), in verbose mode which is good for automated post processing (-v), runs 10 threads (-t10), where each thread's timer is set at a 10 microsecond interval (-d10).
 
+The rt.wiki.kernel.org wiki page for Cyclictest has some good other examples of ``in the wild" uses. \cite{rtWikiCyclicTest}
+
+This section outlines how to use them, and some specific results for the gumstix.
+\subsubsection{Results of cyclictest}
+Table \ref{tab:cyclictestResultsNoLoad} and Table \ref{tab:cyclictestResults} give some basic, not necessarily rigorous, results characterizing the real time abilities of the different kernels I have compiled for the gumstix.
 \begin{table}[h]
 \centering
-\begin{tabular}{|c|c|c|ccc|}
+\hspace*{-1cm}\begin{tabular}{|c|c|c|ccc|}
 \hline
 Image & Cycles & Interval $\mu s$ & \multicolumn{3}{|c|}{Timer Event Response Latency}\\
       &        &                  & Min $\mu s$  & Avg $\mu s$  & Max $ \mu s$\\
@@ -177,7 +200,7 @@ linux-rt, Full Preempt, High Rest Timers\cite{rtKern}&50000&1000&30&156&332\\
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|c|c|c|ccc|}
+\hspace*{-1cm}\begin{tabular}{|c|c|c|ccc|}
 \hline
 Image & Cycles & Interval $\mu s$ & \multicolumn{3}{|c|}{Timer Event Response Latency}\\
       &        &                  & Min $\mu s$  & Avg $\mu s$  & Max $ \mu s$\\
@@ -187,17 +210,13 @@ Sakamon, No Preempt, High Res Timers\cite{sakamonKern}&50000&1000&0&138&271\\
 linux-rt, Full Preempt, High Rest Timers\cite{rtKern}&50000&1000&32&158&302\\
 \hline
 \end{tabular}
-\caption{Result, with 0.80 (Upper limit of where we should operate \TODO{Cite from Real time systems book}) loaded system, of running \texttt{\# cyclictest -n -p80 -l<Count> -i<Interval>} with test kernels running on a gumstix.  The uImages corresponding to all of these kernels can be found through their citations. The \texttt{stress -c 2} tool was used to stress the system.}
-\label{tab:cyclictestResuts}
+\caption{Result, with loaded system, of running \texttt{\# cyclictest -n -p80 -l<Count> -i<Interval>} with test kernels running on a gumstix.  The uImages corresponding to all of these kernels can be found through their citations. The command \texttt{stress -c 2} was used to stress the system.  \cite{stressCommand}}
+\label{tab:cyclictestResults}
 \end{table}
 
 \subsection{On The Gumstix}
 The thread on the gumstix-users mailing list at \cite{gumstixRtThread} is the most comprehensive discussion of real time gumstix I have found.  That specific response by Philipp Lutz mimicks and confirms a lot of the work I have done so far. Early in the thread, Xenomai \cite{xenomai} is also mentioned.  \TODO{Research Xenomai}
 
-\subsection{cyclictest}
-Cyclictest measures the latency and jitter of executing timer based events on a system.  It spawns a number of threads, and then sets a timer for each thread that triggers at a certain interval.  An example of a call to cyclictest is: \rootCom{cyclictest -n -p80 -i0 -l5000 -v -t10 -d10}which shows results in nanoseconds (-n), sets thread 1 to priority 80 (-p80), spaces the interval of each thread by 0 nanoseconds (-i0), runs 5000 loops (-l5000), in verbose mode which is good for automated post processing (-v), runs 10 threads (-t10), where each thread's timer is set at a 10 microsecond interval (-d10).
-
-The rt.wiki.kernel.org wiki page for Cyclictest has some good other examples of ``in the wild" uses. \cite{rtWikiCyclicTest}
 \input{image_creation.tex}
 
 \section{NOTES ON OUR USE}

@@ -14,7 +14,7 @@
 #include <errno.h> /* For the errno definition and all of the error state macros */
 
 #include <sched.h> /* for all SCHED_/sched_ calls */
-#include <resource.h> /* for getpriority() */
+#include <sys/resource.h> /* for getpriority() */
 
 /* Defines _POSIX_PRIORITY_SCHEDULING if this system has all of
  *     the scheduling system calls
@@ -91,6 +91,6 @@ main(int argc, char *argv[])
     if (sched_getparam(this_pid, &param) < 0) {
         perror("Syscall sched_getparam barfed");
     } else {
-        printf("The sched_param schedule priority is: %i\n", param->sched_priority);
+        printf("The sched_param schedule priority is: %i\n", param.sched_priority);
     }
 }

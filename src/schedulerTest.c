@@ -9,11 +9,21 @@
  * October 25, 2012
  */
 
-#include <stdio.h> /* For printf(...) */
+#include <stdio.h> /* For printf(...)*/
 #include <stdlib.h> /* For exit() */
+#include <errno.h> /* For the errno definition and all of the error state macros */
 
 #include <sched.h> /* for all SCHED_/sched_ calls */
-#include <unistd.h> /* Defines _POSIX_PRIORITY_SCHEDULING if this system has all of the scheduling system calls */
+#include <resource.h> /* for getpriority() */
+
+/* Defines _POSIX_PRIORITY_SCHEDULING if this system has all of
+ *     the scheduling system calls
+ *
+ * Also has pid_t which is a signed integer type used for storing
+ * system process ids (pids).  pid_t = 0 normally refers to the
+ * current process.
+ */
+#include <unistd.h>
 
 #ifdef _POSIX_PRIORITY_SCHEDULING
 static const int have_sched_prio = 1;
@@ -58,5 +68,29 @@ main(int argc, char *argv[])
            min_prio_FIFO,
            min_prio_RR,
            min_prio_OTHER);
-}
 
+    /* Get the proirity of this process. This is the NON-REALTIME priority.
+     *   http://linux.die.net/man/2/getpriority
+     */
+    /* This can return -1 as a legitimate value, so first clear errno
+     * and make sure to check it after the call.
+     */
+    pid_t this_pid = 0; /* 0 refers to the current thread/process in most (all?) system calls */
+    errno = 0;
+    int this_prio = getpriority(PRIO_PROCESS, this_pid);
+    if ((this_prio == -1) && (errno)) {
+        perror("Syscall getpriority failed");
+    } else {
+        printf("Process priority is: %i\n", this_prio);
+    }
+
+    /* Get and inspect the scheduling parameters.  This can contain realtime relevant
+     * information if this process is operating with SCHED_FIFO
+     */
+    struct sched_param param;
+    if (sched_getparam(this_pid, &param) < 0) {
+        perror("Syscall sched_getparam barfed");
+    } else {
+        printf("The sched_param schedule priority is: %i\n", param->sched_priority);
+    }
+}

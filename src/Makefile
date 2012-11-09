@@ -7,4 +7,4 @@ scheduler_syscalls: schedulerTest.o
 	rm *.o
 
 clean:
-	rm *.o schedulerTest schedulerTest.o
+	rm *.o schedulerTest

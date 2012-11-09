@@ -7,6 +7,7 @@
 \newcommand{\rootCom}[1]{\\\indent\indent\texttt{ \small root\# #1}\\}
 \newcommand{\userCom}[1]{\\\indent\indent\texttt{ \small user\$ #1}\\}
 \newcommand{\bashCode}[1]{\\\indent\indent\texttt{ \small #1} \\}
+\newcommand{\lineCode}[1]{\bashCode{#1}}
 \newcommand{\unit}[1]{\texttt{\[#1\]}}
 
 \title{Overview of Real Time Operating Systems \\ Fall 2012 Independent Study} % Title
@@ -103,6 +104,8 @@ The {\texttt{SCHED\_FF}, \texttt{SCHED\_RR}, \texttt{SCHED\_OTHER}, and \texttt{
 
 Each process is given one of the scheduling policies listed above.  For a full discussion of how to use process scheduling (watch out, it might be slightly outdated) see Chapter 10 of Understanding the Linux Kernel.\cite{linuxKernelCh10}  Also, check the \texttt{syscalls} manpage for system calls of the form \texttt{sched\_*} for a good starter list of relevant system calls for getting and setting scheduling related settings for a process.
 
+The important real time scheduling settings \texttt{/proc/sys/kernel/sched\_rt\_period\_us} and \texttt{/proc/sys/kernel/sched\_rt\_runtime\_us} define how much time is given to realtime processes in your system.  They are given detailed descriptions in \cite{schedulerDocs} so, again, go read it!
+
 \subsection{Context switching and Preemption}
 Context switching occurs when the kernel changes the ``current" task, be it to another kernel task or to a user space process.  This occurs often behind the scenes to make it look as if all of the processes running on a system are running simultaneously.  In reality, only one runs at a time.
 
@@ -180,6 +183,7 @@ Cyclictest measures the latency and jitter of executing timer based events on a 
 The rt.wiki.kernel.org wiki page for Cyclictest has some good other examples of ``in the wild" uses. \cite{rtWikiCyclicTest}
 
 This section outlines how to use them, and some specific results for the gumstix.
+
 \subsubsection{Results of cyclictest}
 Table \ref{tab:cyclictestResultsNoLoad} and Table \ref{tab:cyclictestResults} give some basic, not necessarily rigorous, results characterizing the real time abilities of the different kernels I have compiled for the gumstix.
 \begin{table}[h]
@@ -219,12 +223,31 @@ The thread on the gumstix-users mailing list at \cite{gumstixRtThread} is the mo
 
 \input{image_creation.tex}
 
+\section{Using Real Time Linux}
+Once you have a working system running real time linux, reading through this section should serve as a solid first step toward taking advantage of the real time capabilities. 
+
+\subsection{Permissions}
+A realtime application wants to run with its scheduling policy set to \texttt{SCHED\_FIFO}.  Permission is needed to do this, which means either being \texttt{root} or have special permission to do so.  Granting special permission is done by modifying the \texttt{/etc/security/limits.conf} configuration file which configures different system limits for specific users and groups.  For example, to enable those in the \texttt{realtime} group (which you will need to form with \texttt{addgroup}) to set process scheduling to \texttt{SCHED\_FIFO} and then increase their rtprio priority level up to a max of 99 (The highest possible right now, but you should use the \texttt{sched\_*} system calls to get the max in code), the following line can be added to \texttt{limits.conf}:\lineCode{@realtime    hard     rtprio    99}
+
+\TODO{Check that this whole permissions section is correct.  (Write code!)}
+
+Please be warry of the fact that \texttt{SCHED\_FIFO} processes with high priority can kill your system by hogging all of the CPU time.  You should know how long the process will ask to run for and make sure that it leaves computation time for the system to do its thing.  \TODO{This needs to be more specific.  Its the essence of writing real time applications}
+
+\subsection{High Resolution Timers}
+Documentation for High Resolution Timers can be found in the kernel documentation at \cite{highResTimerDoc}.
+\TODO{linuxsymposium pg 333 hr timer paper.  Look into ``clock event source registration"}
+
+High resolution timer articles on lwn: \cite{highResTimerAPI}, \cite{newApproachToKernelTimers}
+
 \section{NOTES ON OUR USE}
 We are using the rt Linux release at \cite{RealTimeLinuxPatch}.  We are using the 3.2 kernel, so we are using the ``v3.2-rt" branch on the repo.
 
 \section{NOTES}
-Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
-
+This section is full of random votes that don't fit anywhere else.
+\begin{enumerate}
+\item Real time software can't have it memory paged out, so in linux a call to {\texttt mlockall()} needs to be made.  This makes sure all of a program's memory stays in RAM. (FAQ at \cite{RealTimeLinux})
+\item NUMA is mentioned throughout the rt-test code, and there is an \texttt{rt\_numa.h} header file with functions that provide some custom memory management functionality.  NUMA, or Non-Uniform Memoery Architecture, pertains to multiprocessor systems so we can ignore it on the gumstix.  See the NUMA manpage \cite{NUMA} for details.
+\end{enumerate}
 \input{bibliography.tex}
 \end{document}
 

@@ -51,50 +51,6 @@ char *sched_policies[] = {
     "SCHED_FIFO"
 };
 
-int
-main(int argc, char *argv[])
-{
-    if (!have_sched_prio) {
-        printf("This system does not have POSIX process priority scheduling!\n");
-        exit(1);
-    }
-
-    /* Get the maximum schedule priority
-        http://linux.die.net/man/2/sched_get_priority_max
-    */
-    int max_prio_FIFO = sched_get_priority_max(SCHED_FIFO);
-    int max_prio_RR = sched_get_priority_max(SCHED_RR);
-    int max_prio_OTHER = sched_get_priority_max(SCHED_OTHER);
-
-    printf("Scheduling Priority Maximums:\n"
-           "    SCHED_FIFO: %i\n"
-           "    SCHED_RR: %i\n"
-           "    SCHED_OTHER: %i\n",
-           max_prio_FIFO,
-           max_prio_RR,
-           max_prio_OTHER);
-
-    /* Get the minimum schedule priorities for each process scheduling type
-     *  http://linux.die.net/man/2/sched_get_priority_min
-     */
-    int min_prio_FIFO = sched_get_priority_min(SCHED_FIFO);
-    int min_prio_RR = sched_get_priority_min(SCHED_RR);
-    int min_prio_OTHER = sched_get_priority_min(SCHED_OTHER);
-
-    printf("Scheduling Priority Minimums:\n"
-           "    SCHED_FIFO: %i\n"
-           "    SCHED_RR: %i\n"
-           "    SCHED_OTHER: %i\n",
-           min_prio_FIFO,
-           min_prio_RR,
-           min_prio_OTHER);
-
-    print_process_prio(0);
-    print_sched_type(0);
-    print_sched_priority(0);
-}
-
-
 void
 print_process_prio(pid_t pid)
 {
@@ -141,3 +97,48 @@ print_sched_priority(pid_t pid)
         printf("The sched_param schedule priority is: %i\n", param.sched_priority);
     }
 }
+
+int
+main(int argc, char *argv[])
+{
+    if (!have_sched_prio) {
+        printf("This system does not have POSIX process priority scheduling!\n");
+        exit(1);
+    }
+
+    /* Get the maximum schedule priority
+        http://linux.die.net/man/2/sched_get_priority_max
+    */
+    int max_prio_FIFO = sched_get_priority_max(SCHED_FIFO);
+    int max_prio_RR = sched_get_priority_max(SCHED_RR);
+    int max_prio_OTHER = sched_get_priority_max(SCHED_OTHER);
+
+    printf("Scheduling Priority Maximums:\n"
+           "    SCHED_FIFO: %i\n"
+           "    SCHED_RR: %i\n"
+           "    SCHED_OTHER: %i\n",
+           max_prio_FIFO,
+           max_prio_RR,
+           max_prio_OTHER);
+
+    /* Get the minimum schedule priorities for each process scheduling type
+     *  http://linux.die.net/man/2/sched_get_priority_min
+     */
+    int min_prio_FIFO = sched_get_priority_min(SCHED_FIFO);
+    int min_prio_RR = sched_get_priority_min(SCHED_RR);
+    int min_prio_OTHER = sched_get_priority_min(SCHED_OTHER);
+
+    printf("Scheduling Priority Minimums:\n"
+           "    SCHED_FIFO: %i\n"
+           "    SCHED_RR: %i\n"
+           "    SCHED_OTHER: %i\n",
+           min_prio_FIFO,
+           min_prio_RR,
+           min_prio_OTHER);
+
+    print_process_prio(0);
+    print_sched_priority(0);
+    print_sched_type(0);
+}
+
+

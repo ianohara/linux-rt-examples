@@ -231,7 +231,9 @@ A realtime application wants to run with its scheduling policy set to \texttt{SC
 
 \TODO{Check that this whole permissions section is correct.  (Write code!)}
 
-Please be warry of the fact that \texttt{SCHED\_FIFO} processes with high priority can kill your system by hogging all of the CPU time.  You should know how long the process will ask to run for and make sure that it leaves computation time for the system to do its thing.  \TODO{This needs to be more specific.  Its the essence of writing real time applications}
+Please be warry of the fact that \texttt{SCHED\_FIFO} processes with high priority can kill your system by hogging all of the CPU time.  You should know how long the process will ask to run for and make sure that it leaves computation time for the system to do its thing.  
+\TODO{This needs to be more specific.  Its the essence of writing real time applications}
+\TODO{Look up and explain CAP\_SYS\_NICE.  It is important}
 
 \subsection{High Resolution Timers}
 Documentation for High Resolution Timers can be found in the kernel documentation at \cite{highResTimerDoc}.

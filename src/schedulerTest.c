@@ -134,6 +134,19 @@ main(int argc, char *argv[])
     print_process_prio(0);
     print_sched_priority(0);
     print_sched_type(0);
+
+    printf("Attempting to switch process to SCHED_FIFO...\n");
+    struct sched_param sp;
+    memset(&sp, 0, sizeof(sp));
+    sp.sched_priority = max_prio_FIFO;
+    if (sched_setscheduler(0, SCHED_FIFO, &sp) < 0) {
+        perror("Problem setting scheduling policy to SCHED_FIFO (probably need rtprio rule in /etc/security/limits.conf)");
+        exit(1);
+    }
+
+    print_process_prio(0);
+    print_sched_priority(0);
+    print_sched_type(0);
+
+    printf("\nTest completed successfully!\n");
 }
-
-

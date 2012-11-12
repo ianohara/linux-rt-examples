@@ -139,7 +139,7 @@ main(int argc, char *argv[])
     printf("Attempting to switch process to SCHED_FIFO...\n");
     struct sched_param sp;
     memset(&sp, 0, sizeof(sp));
-    sp.sched_priority = max_prio_FIFO;
+    sp.sched_priority = 50; /* This cannot be higher than max_prio_FIFO! */
     if (sched_setscheduler(0, SCHED_FIFO, &sp) < 0) {
         perror("Problem setting scheduling policy to SCHED_FIFO (probably need rtprio rule in /etc/security/limits.conf)");
         exit(1);

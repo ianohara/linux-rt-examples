@@ -94,6 +94,16 @@ print_sched_priority(pid_t pid)
     }
 }
 
+void
+hline(void)
+{
+    char str[82];
+    memset(str, '-', 80);
+    str[80] = '\n';
+    str[81] = '\0';
+    printf("%s", str);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -135,7 +145,8 @@ main(int argc, char *argv[])
     print_process_prio(0);
     print_sched_priority(0);
     print_sched_type(0);
-
+    
+    hline();
     printf("Attempting to switch process to SCHED_FIFO...\n");
     struct sched_param sp;
     memset(&sp, 0, sizeof(sp));

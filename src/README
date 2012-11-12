@@ -1,0 +1,20 @@
+Real Time Linux Example Code
+============================
+The code snippets here are meant to demonstrate using the different
+Linux features required to write real time Linux applications.  Reading
+through all of the code should give you a good start toward creating
+successful realtime code.
+
+Build and Install
+-----------------
+To build all of the code samples, just make:
+  user$ make
+There is no install rule, so you'll have to run them in place.
+
+Contact
+-------
+You can contact Ian O'Hara via ianohara at gmail, or try IRC
+at irc.ianohara.com in #Eng_Bestiary.  This was originally written
+while at the University of Pennsylvania, but feel free to contact
+me if I'm no longer there.  I'm always willing to help in whatever
+way I can.

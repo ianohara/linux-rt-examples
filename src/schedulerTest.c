@@ -4,10 +4,6 @@
  *  be found at:
  *      http://www.makelinux.net/books/ulk3/understandlk-CHP-7-SECT-6#understandlk-CHP-7-SECT-6
  *
- * System Calls Exemplified Here:
- *   sched_get_priority_max()
- *   sched_get_priority_min()
- *   sched_getparam()
  * Ian O'Hara
  * ianohara at gmail dot com
  * October 25, 2012
@@ -39,16 +35,15 @@ static const int have_sched_prio = 0;
  * can be found by looking in /usr/include/sched.h and following #includes
  * until you find the SCHED_* definitions.
  *
- * These are for OS X 10.6.8 and I found the defines
- * in: /usr/include/pthread_impl.h
+ * These are for the 3.2.30-rt45 kernel and I found the defines
+ * in: /usr/include/bits/sched.h
  */
-const static int SCHED_POLICY_MAX = 4;
+const static int SCHED_POLICY_MAX = 3;
 char *sched_policies[] = {
-    "0_NOT_A_POLICY",
     "SCHED_OTHER",
+    "SCHED_FIFO",
     "SCHED_RR",
-    "3_NOT_A_POLICY",
-    "SCHED_FIFO"
+    "SCHED_BATCH"
 };
 
 void

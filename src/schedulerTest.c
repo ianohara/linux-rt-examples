@@ -12,6 +12,7 @@
 #include <stdio.h> /* For printf(...)*/
 #include <stdlib.h> /* For exit() */
 #include <errno.h> /* For the errno definition and all of the error state macros */
+#include <string.h> /* For memset() */
 
 #include <sched.h> /* for all SCHED_/sched_ calls */
 #include <sys/resource.h> /* for getpriority() */

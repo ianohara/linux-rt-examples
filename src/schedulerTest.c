@@ -40,7 +40,7 @@ static const int have_sched_prio = 0;
  * in: /usr/include/bits/sched.h
  */
 const static int SCHED_POLICY_MAX = 3;
-char *sched_policies[] = {
+const char *sched_policies[] = {
     "SCHED_OTHER",
     "SCHED_FIFO",
     "SCHED_RR",
@@ -145,7 +145,7 @@ main(int argc, char *argv[])
     print_process_prio(0);
     print_sched_priority(0);
     print_sched_type(0);
-    
+
     hline();
     printf("Attempting to switch process to SCHED_FIFO...\n");
     struct sched_param sp;

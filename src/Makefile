@@ -1,6 +1,6 @@
 default: all
 
-all: scheduler_syscalls
+all: scheduler_syscalls hrtimer_test
 
 scheduler_syscalls: schedulerTest.o
 	gcc -o schedulerTest schedulerTest.o

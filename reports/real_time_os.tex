@@ -116,9 +116,19 @@ See \cite{LinuxProcessSwitch} for an excellent explanation of the different ways
 \subsection{User Control}
 In standard Linux, users have some control over scheduling.  Mentioned in this document is the nice() scheduling priority mechanism.  Also, users can take advantage of the sleep() system call (and others of the same flavor such as usleep()) to signify to the kernel that the user process is done what it needs to do for some time.  POSIX compliance of an OS stipulates that the sleep() functions return control the process at or after the specified time.  The ``or after" specification is important because an OS does not need to make any guarantees on when it returns control to the process as long as it is after the specified sleep time.  This is an issue when trying to write realtime programs.
 
-\TODO{How to use Scheduling system calls}
+\subsection{Timers (High Resolution Timers)}
+Timers provide a mechanism for telling the kernel that a realtime process wants control after a certain interval of time has passed (either repeatedly, or once depending on how a timer is setup).  For a realtime process running with higher scheduling priority than any other process, its timer triggering should result in regaining control (typically) in the average latency of the system.
 
-\TODO{How to use Timers (High Res Timers)}
+An example of using hrtimers can be found in hrtimerTest.c at \cite{hrtimerTest}.  It is self documenting, so go read it.
+
+Useful resources for learning more about Timers/hrtimers are:
+\begin{enumerate}
+\item hrtimers.txt in the kernel documentation \cite{highResTimerDoc}
+\item High resolution timer API on LWN \cite{highResTimerAPI}
+\item Original article on changing to the hrtimers \cite{newApproachToKernelTimers}
+\end{enumerate}
+
+\TODO{How to use Scheduling system calls}
 
 \section{REAL TIME LINUX}
 The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
@@ -232,6 +242,7 @@ A realtime application wants to run with its scheduling policy set to \texttt{SC
 Please be warry of the fact that \texttt{SCHED\_FIFO} processes with high priority can kill your system by hogging all of the CPU time.  You should know how long the process will ask to run for and make sure that it leaves computation time for the system to do its thing.  
 \TODO{This needs to be more specific.  Its the essence of writing real time applications}
 \TODO{Look up and explain CAP\_SYS\_NICE.  It is important}
+\TODO{Look up writing ``0" to /dev/cpu\_dma\_latency and its effect. clark and JackWinter had convo about it on \#linux-rt on 11-14-2012 at 12:30pm.  See \url{http://www.embedded-linux.co.uk/downloads/ESC-5.5-power-saving-slides.pdf} on pg 14}
 
 \subsection{High Resolution Timers}
 Documentation for High Resolution Timers can be found in the kernel documentation at \cite{highResTimerDoc}.

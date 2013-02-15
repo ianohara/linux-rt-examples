@@ -53,6 +53,10 @@ if [ ! -d "$SRCDIR" ]; then
     exit 1 
 fi
 
+if [ -e "~/.ssh/id_rsa" ]; then
+    SSH_COM="-e \"ssh -i ~/.ssh/id_rsa\""
+fi
+
 echo "Copying contents of '$SRCDIR' to '$USERHOST:rt-gumstix-tests'..."
-rsync --exclude=".svn" -ra $SRCDIR $USERHOST:rt-gumstix-tests
+rsync --exclude=".svn" -ra $SSH_COM_OPT $SRCDIR $USERHOST:rt-gumstix-tests
 

@@ -107,19 +107,22 @@ Each process is given one of the scheduling policies listed above.  For a full d
 The important real time scheduling settings \texttt{/proc/sys/kernel/sched\_rt\_period\_us} and \texttt{/proc/sys/kernel/sched\_rt\_runtime\_us} define how much time is given to realtime processes in your system.  They are given detailed descriptions in \cite{schedulerDocs} so, again, go read it!
 
 \subsection{Context switching and Preemption}
-Context switching occurs when the kernel changes the ``current" task, be it to another kernel task or to a user space process.  This occurs often behind the scenes to make it look as if all of the processes running on a system are running simultaneously.  In reality, only one runs at a time.
+Context switching occurs when the kernel changes the ``current" task, be it to another kernel task or to a user space process.  This occurs often behind the scenes to make it look as if all of the processes running on a system are running simultaneously.  In reality, only one task runs at a time per cpu (or core).
 
 Preemption is the suspension of a current running task in favor of another higher priority one.
 
 See \cite{LinuxProcessSwitch} for an excellent explanation of the different ways linux knows it is safe to switch context, and how different tasks (including kernel tasks) can be preempted.
 
-\subsection{User Control}
-In standard Linux, users have some control over scheduling.  Mentioned in this document is the nice() scheduling priority mechanism.  Also, users can take advantage of the sleep() system call (and others of the same flavor such as usleep()) to signify to the kernel that the user process is done what it needs to do for some time.  POSIX compliance of an OS stipulates that the sleep() functions return control the process at or after the specified time.  The ``or after" specification is important because an OS does not need to make any guarantees on when it returns control to the process as long as it is after the specified sleep time.  This is an issue when trying to write realtime programs.
+\subsection{User Control: Sleep}
+Users can take advantage of the sleep() system call (and others of the same flavor such as usleep() and nanosleep()) to signify to the kernel that the user process is done what it needs to do for some time.  POSIX compliance of an OS stipulates that the sleep() functions return control the process at or after the specified time.  The ``or after" specification is important because an OS does not need to make any guarantees on when it returns control to the process as long as it is after the specified sleep time.  This is an issue when trying to write realtime programs.
+\subsection{User Control: Scheduling priority}
+A realtime process needs to modify its scheduling policy to tell the operating system that it is realtime and should not be preempted.  This is done by using the \texttt{sched\_\*} system calls.  An example of how to do this can be found at \href{https://github.com/ianohara/rt-linux-examples/blob/master/src/schedulerTest.c}{src/schedulerTest.c}.
 
-\subsection{Timers (High Resolution Timers)}
+In Linux, users can configure the scheduling priority within their scheduling policy.  This is done with the setpriority() system call.  Mentioned in this document is the nice() scheduling priority mechanism. 
+\subsection{User Control: Timers (High Resolution Timers)}
 Timers provide a mechanism for telling the kernel that a realtime process wants control after a certain interval of time has passed (either repeatedly, or once depending on how a timer is setup).  For a realtime process running with higher scheduling priority than any other process, its timer triggering should result in regaining control (typically) in the average latency of the system.
 
-An example of using hrtimers can be found in hrtimerTest.c at \cite{hrtimerTest}.  It is self documenting, so go read it.
+An example of using hrtimers can be found in \href{https://github.com/ianohara/rt-linux-examples/blob/master/src/hrtimerTest.c}{hrtimerTest.c}.  It is self documenting, so go read it.
 
 Useful resources for learning more about Timers/hrtimers are:
 \begin{enumerate}
@@ -127,8 +130,6 @@ Useful resources for learning more about Timers/hrtimers are:
 \item High resolution timer API on LWN \cite{highResTimerAPI}
 \item Original article on changing to the hrtimers \cite{newApproachToKernelTimers}
 \end{enumerate}
-
-\TODO{How to use Scheduling system calls}
 
 \section{REAL TIME LINUX}
 The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
@@ -249,7 +250,7 @@ Documentation for High Resolution Timers can be found in the kernel documentatio
 
 There are a number of ways to use timers in practice, but all of them involve using the linux signal system. Namely, the operating system lets your process, or a thread within your process, know when a timer has run out (fired, or triggered) by sending it a signal.  What signal, and how the signal is received is up to you - there are a few choices:
 \begin{enumerate}
-\item Use a single thread and an asynchronous signal handler (See 
+\item Use a single thread and an asynchronous signal handler (See \href{https://github.com/ianohara/rt-linux-examples/blob/master/src/hrtimerTest.c}{src/hrtimerTest.c} for an example of this)
 \item Use a single thread, block the signal, and receive it synchronously with sigwait
 \item Use multple threads and tell the signal to target a specific thread with an asynchronous signal handler
 \item Use multiple threads and tell the signal to target a specific thread.  Block the signal in each thread, and use sigwait to receive the thread specific signal synchronously in each thread (this is what cyclictest in rt-tests does.)

@@ -4,7 +4,7 @@ The Das U-Boot is a ``Universal Boot Loader" \cite{UBoot} developed in Denmark. 
 \subsection{Building Kernels for UBoot}
 To build a kernel meant for booting with UBoot, we need a uImage kernel image.  This requires that the ``mkimage" tool is available to the kernel build tools.  On a Debian based system, this can be done with ``apt-get install uboot-mkimage".
 \section{Building the RT Kernel}
-With a clean checkout of the real time kernel, you can build it by changing directory to the root of the git checkout and doing: \userCom{make config} or: \userCom{make menuconfig} if you have ncurses and want to navigate through a menu to setup your kernel.  This step is essential, because you'll configure what your compiled kernel will act like and what it will contain.  To turn on full real time capability, you should make sure that the following options are set to 'y':
+With a clean checkout of the real time kernel \cite{RealTimeLinuxGit}, you can build it by changing directory to the root of the git checkout and doing: \userCom{make config} or: \userCom{make menuconfig} if you have ncurses and want to navigate through a menu to setup your kernel.  This step is essential, because you'll configure what your compiled kernel will act like and what it will contain.  To turn on full real time capability, you should make sure that the following options are set to 'y':
 \begin{enumerate}
 \item CONFIG\_PREEMPT
 \item CONFIG\_PREEMPT\_RT\_BASE

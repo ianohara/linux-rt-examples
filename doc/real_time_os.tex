@@ -246,6 +246,15 @@ Please be warry of the fact that \texttt{SCHED\_FIFO} processes with high priori
 
 \subsection{High Resolution Timers}
 Documentation for High Resolution Timers can be found in the kernel documentation at \cite{highResTimerDoc}.
+
+There are a number of ways to use timers in practice, but all of them involve using the linux signal system. Namely, the operating system lets your process, or a thread within your process, know when a timer has run out (fired, or triggered) by sending it a signal.  What signal, and how the signal is received is up to you - there are a few choices:
+\begin{enumerate}
+\item Use a single thread and an asynchronous signal handler (See 
+\item Use a single thread, block the signal, and receive it synchronously with sigwait
+\item Use multple threads and tell the signal to target a specific thread with an asynchronous signal handler
+\item Use multiple threads and tell the signal to target a specific thread.  Block the signal in each thread, and use sigwait to receive the thread specific signal synchronously in each thread (this is what cyclictest in rt-tests does.)
+\end{enumerate}
+
 \TODO{linuxsymposium pg 333 hr timer paper.  Look into ``clock event source registration"}
 
 High resolution timer articles on lwn: \cite{highResTimerAPI}, \cite{newApproachToKernelTimers}

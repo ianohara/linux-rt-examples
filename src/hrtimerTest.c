@@ -21,10 +21,12 @@
  *
  * Note: A lot of the "rt" idioms were found in the rt-tests source code.
  *
+ * Note/TODO: This just explains how to setup a timer, but does not ensure that
+ *       the process is scheduled with SCHED_FIFO and has a high rt priority.
  */
 
-#include <stdio.h> /* for printf */
-#include <time.h> /* for clock_getres, clock_gettime */
+#include <stdio.h>  /* printf */
+#include <time.h>   /* clock_getres, clock_gettime, time */
 #include <signal.h> /* sigevent, sigaction */
 
 static const unsigned long USEC_PER_SEC = 1000000u;
@@ -52,7 +54,16 @@ static int have_hrtimers(void)
     return !(ts.tv_sec != 0 || ts.tv_nsec != 1);
 }
 
-/* Keep track of the number of times the timer has triggered. */
+/* This will get called every time our timer goes off.  Increment
+ * a global each time so we can tell how many times it has been
+ * called and print out trigget_cnt periodically in the main
+ * loop.
+ *
+ * This is where you'd read in your sensor data, run your controller, or whatever.  
+ * Remember though, that if you're scheduled with SCHED_FIFO and have the highest
+ * realtime priority, this callback could end up crashing the whole system by 
+ * hogging the cpu!!!  It is essentially a userspace interrupt, so beware!
+ */
 static unsigned long trigger_cnt = 0;
 static void sig_alarm_handler(int sig) {
     trigger_cnt++;
@@ -79,34 +90,37 @@ int main(int argc, char *argv[])
     struct timespec interval = {
         .tv_sec = interval_us / USEC_PER_SEC,
         .tv_nsec = (interval_us % USEC_PER_SEC) * 1000
-    }
+    };
+    /* For keeping track of the timer we setup */
     timer_t timer_id;
+    /* For telling the timer when it should fire first, and at what interval from then on. */
     struct itimerspec timer_spec;
+    /* For telling the timer what to do when it fires */
     struct sigevent sigevt;
-    sigset_t sig_mask;
+    /* For telling Linux what to do when the timer sends the signal to this process */
     struct sigaction sigact;
 
-    /*
-     * This is the bare bones example, so no threads are used.  If multiple
-     * threads are needed, then the linux specific SIGEV_THREAD_ID value for
-     * the sigev_notify field of the struct sigevent passed to timer_create
-     * can be used to have the timer trigger signal get sent to a specific
-     * thread within the process.
+    /* Have the timer send us a SIGALRM when it fires.  Note that this means
+     * we cannot use any of the sleep, usleep, etc mechanisms that might use
+     * SIGALRM.
      */
-
     sigevt.sigev_notify = SIGEV_SIGNAL;
-    sigevt.sigev_signo = SIG_ALARM;
+    sigevt.sigev_signo = SIGALRM;
 
-     /* Do nothing special, just call the specified handler when the signal is received. */
+     /* Do nothing special when the signal from the timer is received,
+      * just call the specified handler. */
     sigact.sa_handler = &sig_alarm_handler;
     sigact.sa_flags = 0;
     sigemptyset(&sigact.sa_mask);
-
     if (sigaction(sigevt.sigev_signo, &sigact, NULL)) {
         perror("sigaction: ");
         return 1;
     }
     
+    /* Create the timer using CLOCK_MONOTONIC which is the system clock
+     * that *always* counts up (ie: leap days, daylight savings, etc do
+     * not cause it to do funky things).
+     */
     if (timer_create(CLOCK_MONOTONIC, &sigevt, &timer_id)) {
         perror("timer_create: ");
         return 1;
@@ -117,22 +131,26 @@ int main(int argc, char *argv[])
      */
     timer_spec.it_interval = interval;
     /* When to trigger for the first time, by
-     * default relative to time of call to timer_settime */
+     * default this is relative to time of call to timer_settime */
     timer_spec.it_value = interval; 
-
     if (timer_settime(timer_id, 0, &timer_spec, NULL)) {
         perror("timer_settime: ");
         return 1;
     }
      
     printf("Now we wait...\n");
-    unsigned int sleep_int = 2;
     unsigned int total_time = 0;
+    time_t sleep_int = 2;
+    time_t now, last = time(NULL);
+    time_t now;
     for (;;) {
-        sleep(sleep_int);
+        /* IMPORTANT USAGE NOTE: sleep, usleep, and nanosleep all have unspecified
+         * behaviors when used in parallel with signals.  Beware.
+         */
+        now = time(NULL);
+        if ((now - last) < sleep_int) continue;
+        last = now;
         total_time += sleep_int;
-        print("After %u seconds the timer has triggered %lu times.", total_time, trigger_cnt);
+        printf("After ~%u seconds the timer has triggered %lu times.\n", total_time, trigger_cnt);
     }
 }
-
-

@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     printf("Now we wait...\n");
     unsigned int total_time = 0;
     time_t sleep_int = 2;
-    time_t now, last = time(NULL);
+    time_t last = time(NULL);
     time_t now;
     for (;;) {
         /* IMPORTANT USAGE NOTE: sleep, usleep, and nanosleep all have unspecified

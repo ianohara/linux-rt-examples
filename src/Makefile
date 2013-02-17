@@ -9,4 +9,4 @@ hrtimer_test: hrtimerTest.o
 	gcc -o hrtimerTest -lrt hrtimerTest.o
 
 clean:
-	rm *.o schedulerTest
+	rm *.o schedulerTest hrtimerTest

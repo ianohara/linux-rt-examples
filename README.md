@@ -5,4 +5,4 @@ Documentation and examples of how to use realtime linux (CONFIG_PREEPMT_RT) spec
 
 Contact
 =======
-Feel free to email ian.ohara at gmail.  I'll help in any way I can.
+Feel free to email ian DOT ohara AT gmail.  I'll help in any way I can.

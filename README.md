@@ -3,7 +3,7 @@ rt-linux-examples
 
 Documentation and examples of how to use realtime linux (CONFIG_PREEMPT_RT) specifically tailored for using realtime linux on the gumstix.
 
-See [doc/real_time_os.tex] or the accompanying pdf for decent documentation on
+See [doc/real_time_os.tex](doc/real_time_os.tex) or the accompanying pdf for decent documentation on
 the whole process from downloading the linux-rt kernel source -> running the examples.
 
 Contact

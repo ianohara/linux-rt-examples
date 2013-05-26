@@ -119,6 +119,8 @@ Users can take advantage of the sleep() system call (and others of the same flav
 A realtime process needs to modify its scheduling policy to tell the operating system that it is realtime and should not be preempted.  This is done by using the \texttt{sched\_\*} system calls.  An example of how to do this can be found at \href{https://github.com/ianohara/rt-linux-examples/blob/master/src/schedulerTest.c}{src/schedulerTest.c}.
 
 In Linux, users can configure the scheduling priority within their scheduling policy.  This is done with the setpriority() system call.  Mentioned in this document is the nice() scheduling priority mechanism. 
+\subsection{User Control: \texttt{sched\_yield}}
+If your process or thread is done what it needs to do, but does not need to sleep for a specified time, you can yield control to the kernel with \texttt{sched\_yield}.
 \subsection{User Control: Timers (High Resolution Timers)}
 Timers provide a mechanism for telling the kernel that a realtime process wants control after a certain interval of time has passed (either repeatedly, or once depending on how a timer is setup).  For a realtime process running with higher scheduling priority than any other process, its timer triggering should result in regaining control (typically) in the average latency of the system.
 
@@ -130,6 +132,8 @@ Useful resources for learning more about Timers/hrtimers are:
 \item High resolution timer API on LWN \cite{highResTimerAPI}
 \item Original article on changing to the hrtimers \cite{newApproachToKernelTimers}
 \end{enumerate}
+\subsection{User Control: Signals}
+Signals are the standard mechanism for receiving notifications from the kernel.  For an example, see the hrtimers example.  Other cases where this can be useful is receiving notices from kernel drivers (eg: a sensor driver notifying your application that new data is available).
 
 \section{REAL TIME LINUX}
 The traditional linux kernel allows one process to preempt other processes in limited cases.  Specifically, preemption is controlled by the kernel and occurs only when:
